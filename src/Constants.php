@@ -11,6 +11,14 @@ final class Constants
     public const DB_DEFAULT_PORT = '3306';
     public const DB_TIME_ZONE = '+00:00';
 
+    public const PAGE_SIZE = 8;
+
+    public const DUPLICATE_ENTRY_ERROR = 1062;
+    public const DUPLICATE_KEYS = [
+        'uq_person_email' => self::FIELD_EMAIL,
+        'uq_person_phone' => self::FIELD_PHONE,
+    ];
+
     public const FIELD_ID = 'id';
     public const FIELD_NAME = 'name';
     public const FIELD_EMAIL = 'email';
