@@ -9,8 +9,10 @@ use Throwable;
 final class App
 {
     private const PUBLIC_DIR = __DIR__ . '/../public';
+    private const HOME_TEMPLATE = __DIR__ . '/../templates/home.php';
     private const BUILT_IN_SERVER = 'cli-server';
     private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR;
+    private const INLINE_JSON_FLAGS = self::JSON_FLAGS | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
 
     /**
      * Returns false only under PHP's built-in server, to let it serve existing static files.
@@ -34,14 +36,25 @@ final class App
 
     private static function dispatch(string $path, string $method): void
     {
-        if ($path !== Constants::ROUTE_PERSONS) {
+        $allowedMethods = match ($path) {
+            Constants::ROUTE_HOME => [Constants::METHOD_GET],
+            Constants::ROUTE_PERSONS => Constants::PERSONS_METHODS,
+            default => null,
+        };
+
+        if ($allowedMethods === null) {
             self::sendJson(Constants::HTTP_NOT_FOUND, [Constants::RESPONSE_MESSAGE => Constants::MESSAGE_NOT_FOUND]);
             return;
         }
 
-        if (!in_array($method, Constants::PERSONS_METHODS, true)) {
-            header('Allow: ' . implode(', ', Constants::PERSONS_METHODS));
+        if (!in_array($method, $allowedMethods, true)) {
+            header('Allow: ' . implode(', ', $allowedMethods));
             self::sendJson(Constants::HTTP_METHOD_NOT_ALLOWED, [Constants::RESPONSE_MESSAGE => Constants::MESSAGE_METHOD_NOT_ALLOWED]);
+            return;
+        }
+
+        if ($path === Constants::ROUTE_HOME) {
+            self::renderHome();
             return;
         }
 
@@ -51,6 +64,17 @@ final class App
             : $controller->index($_GET);
 
         self::sendJson($status, $body);
+    }
+
+    private static function renderHome(): void
+    {
+        $clientConfig = json_encode(PersonValidator::clientRules() + [
+            'endpoint' => Constants::ROUTE_PERSONS,
+            'pageSize' => Constants::PAGE_SIZE,
+        ], self::INLINE_JSON_FLAGS);
+
+        header('Content-Type: text/html; charset=utf-8');
+        require self::HOME_TEMPLATE;
     }
 
     /** @param array<string, mixed> $body */
