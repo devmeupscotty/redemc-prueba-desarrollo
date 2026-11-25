@@ -36,7 +36,7 @@ $createdAt = Constants::FIELD_CREATED_AT;
                 <h2 class="panel-title" id="form-title">Ingreso de datos</h2>
                 <p class="required-legend"><span class="required-mark" aria-hidden="true">*</span> Campos obligatorios</p>
 
-                <form id="person-form" novalidate>
+                <form id="person-form" method="post" action="<?= Constants::ROUTE_PERSONS ?>" novalidate>
                     <div class="form-floating field">
                         <input type="text" class="form-control" id="<?= $name ?>" name="<?= $name ?>" placeholder="Nombre"
                                maxlength="<?= Constants::MAX_LENGTH[$name] ?>" autocomplete="name" required aria-required="true" aria-describedby="<?= $name ?>-error">
@@ -45,8 +45,8 @@ $createdAt = Constants::FIELD_CREATED_AT;
                     </div>
 
                     <div class="form-floating field">
-                        <input type="email" class="form-control" id="<?= $email ?>" name="<?= $email ?>" placeholder="Email"
-                               maxlength="<?= Constants::MAX_LENGTH[$email] ?>" autocomplete="email" required aria-required="true" aria-describedby="<?= $email ?>-error">
+                        <input type="text" class="form-control" id="<?= $email ?>" name="<?= $email ?>" placeholder="Email"
+                               maxlength="<?= Constants::MAX_LENGTH[$email] ?>" inputmode="email" autocomplete="email" spellcheck="false" required aria-required="true" aria-describedby="<?= $email ?>-error">
                         <label for="<?= $email ?>">Email <span class="required-mark" aria-hidden="true">*</span></label>
                         <div class="invalid-feedback" id="<?= $email ?>-error"></div>
                     </div>
