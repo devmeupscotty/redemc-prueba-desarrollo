@@ -61,11 +61,11 @@ class PersonRepository
 
     public function duplicateFieldFrom(PDOException $exception): ?string
     {
-        if ((int) ($exception->errorInfo[1] ?? 0) !== Constants::DUPLICATE_ENTRY_ERROR) {
+        if ((int) ($exception->errorInfo[1] ?? 0) !== Constants::DUPLICATE['ENTRY_ERROR']) {
             return null;
         }
 
-        foreach (Constants::DUPLICATE_KEYS as $key => $field) {
+        foreach (Constants::DUPLICATE['KEYS'] as $key => $field) {
             if (str_contains($exception->getMessage(), $key)) {
                 return $field;
             }
@@ -90,7 +90,7 @@ class PersonRepository
             $row['email'],
             $row['phone'],
             (int) $row['id'],
-            DateTimeImmutable::createFromFormat(self::DATE_FORMAT, $row['created_at'], new DateTimeZone(Constants::DB_TIME_ZONE)),
+            DateTimeImmutable::createFromFormat(self::DATE_FORMAT, $row['created_at'], new DateTimeZone(Constants::DB['TIME_ZONE'])),
         );
     }
 }

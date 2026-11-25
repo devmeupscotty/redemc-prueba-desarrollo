@@ -21,17 +21,17 @@ final class PersonController
     public function index(array $query): array
     {
         $total = $this->repository->count();
-        $totalPages = max(Constants::FIRST_PAGE, (int) ceil($total / Constants::PAGE_SIZE));
+        $totalPages = max(Constants::PAGINATION['FIRST_PAGE'], (int) ceil($total / Constants::PAGINATION['PAGE_SIZE']));
         $page = min(self::requestedPage($query), $totalPages);
-        $people = $this->repository->findPage(Constants::PAGE_SIZE, ($page - 1) * Constants::PAGE_SIZE);
+        $people = $this->repository->findPage(Constants::PAGINATION['PAGE_SIZE'], ($page - 1) * Constants::PAGINATION['PAGE_SIZE']);
 
-        return [Constants::HTTP_OK, [
-            Constants::RESPONSE_DATA => array_map(static fn (Person $person) => $person->toArray(), $people),
-            Constants::RESPONSE_META => [
-                Constants::META_PAGE => $page,
-                Constants::META_PER_PAGE => Constants::PAGE_SIZE,
-                Constants::META_TOTAL => $total,
-                Constants::META_TOTAL_PAGES => $totalPages,
+        return [Constants::HTTP['OK'], [
+            Constants::RESPONSE['DATA'] => array_map(static fn (Person $person) => $person->toArray(), $people),
+            Constants::RESPONSE['META'] => [
+                Constants::META['PAGE'] => $page,
+                Constants::META['PER_PAGE'] => Constants::PAGINATION['PAGE_SIZE'],
+                Constants::META['TOTAL'] => $total,
+                Constants::META['TOTAL_PAGES'] => $totalPages,
             ],
         ]];
     }
@@ -60,10 +60,10 @@ final class PersonController
                 throw $exception;
             }
 
-            return self::unprocessable([$field => PersonValidator::message($field, Constants::RULE_DUPLICATE)]);
+            return self::unprocessable([$field => PersonValidator::message($field, Constants::RULE['DUPLICATE'])]);
         }
 
-        return [Constants::HTTP_CREATED, [Constants::RESPONSE_DATA => $created->toArray()]];
+        return [Constants::HTTP['CREATED'], [Constants::RESPONSE['DATA'] => $created->toArray()]];
     }
 
     /** @return array<string, string> */
@@ -74,7 +74,7 @@ final class PersonController
 
         foreach (Constants::UNIQUE_FIELDS as $field) {
             if ($values[$field] !== null && $this->repository->existsBy($field, $values[$field])) {
-                $errors[$field] = PersonValidator::message($field, Constants::RULE_DUPLICATE);
+                $errors[$field] = PersonValidator::message($field, Constants::RULE['DUPLICATE']);
             }
         }
 
@@ -85,12 +85,12 @@ final class PersonController
     private static function requestedPage(array $query): int
     {
         $page = filter_var(
-            $query[Constants::QUERY_PAGE] ?? Constants::FIRST_PAGE,
+            $query[Constants::PAGINATION['QUERY_PARAM']] ?? Constants::PAGINATION['FIRST_PAGE'],
             FILTER_VALIDATE_INT,
-            ['options' => ['min_range' => Constants::FIRST_PAGE]],
+            ['options' => ['min_range' => Constants::PAGINATION['FIRST_PAGE']]],
         );
 
-        return $page === false ? Constants::FIRST_PAGE : $page;
+        return $page === false ? Constants::PAGINATION['FIRST_PAGE'] : $page;
     }
 
     /**
@@ -99,6 +99,6 @@ final class PersonController
      */
     private static function unprocessable(array $errors): array
     {
-        return [Constants::HTTP_UNPROCESSABLE, [Constants::RESPONSE_ERRORS => $errors]];
+        return [Constants::HTTP['UNPROCESSABLE'], [Constants::RESPONSE['ERRORS'] => $errors]];
     }
 }

@@ -19,9 +19,9 @@ final class ApiTest extends DatabaseTestCase
     private const PROJECT_ROOT = __DIR__ . '/../../..';
 
     private const VALID_PERSON = [
-        Constants::FIELD_NAME => 'Ana Pérez',
-        Constants::FIELD_EMAIL => 'ana@mail.com',
-        Constants::FIELD_PHONE => '097680102',
+        Constants::FIELD['NAME'] => 'Ana Pérez',
+        Constants::FIELD['EMAIL'] => 'ana@mail.com',
+        Constants::FIELD['PHONE'] => '097680102',
     ];
 
     /** @var resource|null */
@@ -36,7 +36,7 @@ final class ApiTest extends DatabaseTestCase
         }
 
         $environment = getenv();
-        foreach (Constants::ENV_DB_VARIABLES as $variable) {
+        foreach (Constants::ENV_DB as $variable) {
             $value = getenv($variable);
             if ($value !== false) {
                 $environment[$variable] = $value;
@@ -86,109 +86,109 @@ final class ApiTest extends DatabaseTestCase
 
     public function testHomePageEmbedsTheServerValidationRules(): void
     {
-        $response = self::request(Constants::METHOD_GET, Constants::ROUTE_HOME, raw: true);
+        $response = self::request(Constants::METHOD['GET'], Constants::ROUTE['HOME'], raw: true);
 
-        self::assertSame(Constants::HTTP_OK, $response['status']);
+        self::assertSame(Constants::HTTP['OK'], $response['status']);
         self::assertStringStartsWith('text/html', $response['headers']['content-type']);
         self::assertSame(1, preg_match('#<script type="application/json" id="app-config">(.+?)</script>#s', $response['body'], $match));
 
         $config = json_decode($match[1], true);
-        self::assertSame(Constants::PATTERNS, $config[Constants::CONFIG_PATTERNS]);
-        self::assertSame(Constants::ROUTE_PERSONS, $config[Constants::CONFIG_ENDPOINT]);
-        self::assertSame(Constants::PAGE_SIZE, $config[Constants::CONFIG_PAGE_SIZE]);
-        self::assertSame(Constants::HTTP_UNPROCESSABLE, $config[Constants::CONFIG_UNPROCESSABLE_STATUS]);
-        self::assertSame(Constants::MESSAGE_SERVER_ERROR, $config[Constants::CONFIG_SERVER_ERROR]);
+        self::assertSame(Constants::PATTERNS, $config[Constants::CONFIG['PATTERNS']]);
+        self::assertSame(Constants::ROUTE['PERSONS'], $config[Constants::CONFIG['ENDPOINT']]);
+        self::assertSame(Constants::PAGINATION['PAGE_SIZE'], $config[Constants::CONFIG['PAGE_SIZE']]);
+        self::assertSame(Constants::HTTP['UNPROCESSABLE'], $config[Constants::CONFIG['UNPROCESSABLE_STATUS']]);
+        self::assertSame(Constants::ERROR_MESSAGE['SERVER_ERROR'], $config[Constants::CONFIG['SERVER_ERROR']]);
     }
 
     public function testHomePageLayoutUsesNoTables(): void
     {
-        $response = self::request(Constants::METHOD_GET, Constants::ROUTE_HOME, raw: true);
+        $response = self::request(Constants::METHOD['GET'], Constants::ROUTE['HOME'], raw: true);
 
         self::assertDoesNotMatchRegularExpression('/<(table|tr|td|th)\b/i', $response['body']);
     }
 
     public function testHomePageOnlyAcceptsGet(): void
     {
-        $response = self::request(Constants::METHOD_POST, Constants::ROUTE_HOME);
+        $response = self::request(Constants::METHOD['POST'], Constants::ROUTE['HOME']);
 
-        self::assertSame(Constants::HTTP_METHOD_NOT_ALLOWED, $response['status']);
-        self::assertSame(implode(', ', Constants::HOME_METHODS), $response['headers']['allow']);
+        self::assertSame(Constants::HTTP['METHOD_NOT_ALLOWED'], $response['status']);
+        self::assertSame(implode(', ', Constants::ROUTE_METHODS[Constants::ROUTE['HOME']]), $response['headers']['allow']);
     }
 
     public static function readRoutes(): array
     {
-        return ['home' => [Constants::ROUTE_HOME], 'persons' => [Constants::ROUTE_PERSONS]];
+        return ['home' => [Constants::ROUTE['HOME']], 'persons' => [Constants::ROUTE['PERSONS']]];
     }
 
     #[DataProvider('readRoutes')]
     public function testHeadIsAnsweredLikeGetWithoutBody(string $route): void
     {
-        $response = self::request(Constants::METHOD_HEAD, $route, raw: true);
+        $response = self::request(Constants::METHOD['HEAD'], $route, raw: true);
 
-        self::assertSame(Constants::HTTP_OK, $response['status']);
+        self::assertSame(Constants::HTTP['OK'], $response['status']);
         self::assertSame('', $response['body']);
     }
 
     public function testListReturnsJsonWithPaginationMeta(): void
     {
-        $response = self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS);
+        $response = self::request(Constants::METHOD['GET'], Constants::ROUTE['PERSONS']);
 
-        self::assertSame(Constants::HTTP_OK, $response['status']);
+        self::assertSame(Constants::HTTP['OK'], $response['status']);
         self::assertStringStartsWith('application/json', $response['headers']['content-type']);
         self::assertSame('no-store', $response['headers']['cache-control']);
-        self::assertSame([], $response['json'][Constants::RESPONSE_DATA]);
+        self::assertSame([], $response['json'][Constants::RESPONSE['DATA']]);
         self::assertSame(
-            [Constants::META_PAGE => 1, Constants::META_PER_PAGE => Constants::PAGE_SIZE, Constants::META_TOTAL => 0, Constants::META_TOTAL_PAGES => 1],
-            $response['json'][Constants::RESPONSE_META],
+            [Constants::META['PAGE'] => 1, Constants::META['PER_PAGE'] => Constants::PAGINATION['PAGE_SIZE'], Constants::META['TOTAL'] => 0, Constants::META['TOTAL_PAGES'] => 1],
+            $response['json'][Constants::RESPONSE['META']],
         );
     }
 
     public function testCreatingAPersonAddsItFirstInTheList(): void
     {
-        self::post([Constants::FIELD_EMAIL => 'primero@mail.com', Constants::FIELD_PHONE => ''] + self::VALID_PERSON);
-        $before = self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS)['json'];
+        self::post([Constants::FIELD['EMAIL'] => 'primero@mail.com', Constants::FIELD['PHONE'] => ''] + self::VALID_PERSON);
+        $before = self::request(Constants::METHOD['GET'], Constants::ROUTE['PERSONS'])['json'];
 
         $created = self::post(self::VALID_PERSON);
-        $after = self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS)['json'];
+        $after = self::request(Constants::METHOD['GET'], Constants::ROUTE['PERSONS'])['json'];
 
-        self::assertSame(Constants::HTTP_CREATED, $created['status']);
-        $person = $created['json'][Constants::RESPONSE_DATA];
-        self::assertIsInt($person[Constants::FIELD_ID]);
-        self::assertSame('Ana Pérez', $person[Constants::FIELD_NAME]);
-        self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/', $person[Constants::FIELD_CREATED_AT]);
+        self::assertSame(Constants::HTTP['CREATED'], $created['status']);
+        $person = $created['json'][Constants::RESPONSE['DATA']];
+        self::assertIsInt($person[Constants::FIELD['ID']]);
+        self::assertSame('Ana Pérez', $person[Constants::FIELD['NAME']]);
+        self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/', $person[Constants::FIELD['CREATED_AT']]);
 
-        self::assertSame($before[Constants::RESPONSE_META][Constants::META_TOTAL] + 1, $after[Constants::RESPONSE_META][Constants::META_TOTAL]);
-        self::assertCount(count($before[Constants::RESPONSE_DATA]) + 1, $after[Constants::RESPONSE_DATA]);
-        self::assertSame($person, $after[Constants::RESPONSE_DATA][0]);
+        self::assertSame($before[Constants::RESPONSE['META']][Constants::META['TOTAL']] + 1, $after[Constants::RESPONSE['META']][Constants::META['TOTAL']]);
+        self::assertCount(count($before[Constants::RESPONSE['DATA']]) + 1, $after[Constants::RESPONSE['DATA']]);
+        self::assertSame($person, $after[Constants::RESPONSE['DATA']][0]);
     }
 
     public function testCreatedPersonIsNormalized(): void
     {
         $response = self::post([
-            Constants::FIELD_NAME => '  María   José ',
-            Constants::FIELD_EMAIL => ' Maria.Jose@MAIL.com ',
-            Constants::FIELD_PHONE => '',
+            Constants::FIELD['NAME'] => '  María   José ',
+            Constants::FIELD['EMAIL'] => ' Maria.Jose@MAIL.com ',
+            Constants::FIELD['PHONE'] => '',
         ]);
 
-        $person = $response['json'][Constants::RESPONSE_DATA];
-        self::assertSame('María José', $person[Constants::FIELD_NAME]);
-        self::assertSame('maria.jose@mail.com', $person[Constants::FIELD_EMAIL]);
-        self::assertNull($person[Constants::FIELD_PHONE]);
+        $person = $response['json'][Constants::RESPONSE['DATA']];
+        self::assertSame('María José', $person[Constants::FIELD['NAME']]);
+        self::assertSame('maria.jose@mail.com', $person[Constants::FIELD['EMAIL']]);
+        self::assertNull($person[Constants::FIELD['PHONE']]);
     }
 
     public static function invalidSubmissions(): array
     {
         return [
-            'missing name' => [[Constants::FIELD_NAME => ''], Constants::FIELD_NAME, Constants::RULE_REQUIRED],
-            'whitespace-only name' => [[Constants::FIELD_NAME => '    '], Constants::FIELD_NAME, Constants::RULE_REQUIRED],
-            'name with digits' => [[Constants::FIELD_NAME => 'Ana 2'], Constants::FIELD_NAME, Constants::RULE_FORMAT],
-            'name with markup' => [[Constants::FIELD_NAME => '<script>alert(1)</script>'], Constants::FIELD_NAME, Constants::RULE_FORMAT],
-            'name too long' => [[Constants::FIELD_NAME => str_repeat('a', 101)], Constants::FIELD_NAME, Constants::RULE_LENGTH],
-            'missing email' => [[Constants::FIELD_EMAIL => ''], Constants::FIELD_EMAIL, Constants::RULE_REQUIRED],
-            'malformed email' => [[Constants::FIELD_EMAIL => 'ana@mail'], Constants::FIELD_EMAIL, Constants::RULE_FORMAT],
-            'phone with spaces' => [[Constants::FIELD_PHONE => '097 680 102'], Constants::FIELD_PHONE, Constants::RULE_FORMAT],
-            'phone with country code' => [[Constants::FIELD_PHONE => '+59897680102'], Constants::FIELD_PHONE, Constants::RULE_FORMAT],
-            'phone not starting with 09' => [[Constants::FIELD_PHONE => '087680102'], Constants::FIELD_PHONE, Constants::RULE_FORMAT],
+            'missing name' => [[Constants::FIELD['NAME'] => ''], Constants::FIELD['NAME'], Constants::RULE['REQUIRED']],
+            'whitespace-only name' => [[Constants::FIELD['NAME'] => '    '], Constants::FIELD['NAME'], Constants::RULE['REQUIRED']],
+            'name with digits' => [[Constants::FIELD['NAME'] => 'Ana 2'], Constants::FIELD['NAME'], Constants::RULE['FORMAT']],
+            'name with markup' => [[Constants::FIELD['NAME'] => '<script>alert(1)</script>'], Constants::FIELD['NAME'], Constants::RULE['FORMAT']],
+            'name too long' => [[Constants::FIELD['NAME'] => str_repeat('a', 101)], Constants::FIELD['NAME'], Constants::RULE['LENGTH']],
+            'missing email' => [[Constants::FIELD['EMAIL'] => ''], Constants::FIELD['EMAIL'], Constants::RULE['REQUIRED']],
+            'malformed email' => [[Constants::FIELD['EMAIL'] => 'ana@mail'], Constants::FIELD['EMAIL'], Constants::RULE['FORMAT']],
+            'phone with spaces' => [[Constants::FIELD['PHONE'] => '097 680 102'], Constants::FIELD['PHONE'], Constants::RULE['FORMAT']],
+            'phone with country code' => [[Constants::FIELD['PHONE'] => '+59897680102'], Constants::FIELD['PHONE'], Constants::RULE['FORMAT']],
+            'phone not starting with 09' => [[Constants::FIELD['PHONE'] => '087680102'], Constants::FIELD['PHONE'], Constants::RULE['FORMAT']],
         ];
     }
 
@@ -198,29 +198,29 @@ final class ApiTest extends DatabaseTestCase
     {
         $response = self::post($override + self::VALID_PERSON);
 
-        self::assertSame(Constants::HTTP_UNPROCESSABLE, $response['status']);
-        self::assertSame([$field => PersonValidator::message($field, $rule)], $response['json'][Constants::RESPONSE_ERRORS]);
+        self::assertSame(Constants::HTTP['UNPROCESSABLE'], $response['status']);
+        self::assertSame([$field => PersonValidator::message($field, $rule)], $response['json'][Constants::RESPONSE['ERRORS']]);
         self::assertSame(0, $this->total());
     }
 
     public function testAllErrorsAreReturnedAtOnce(): void
     {
-        $response = self::post([Constants::FIELD_NAME => '', Constants::FIELD_EMAIL => 'x', Constants::FIELD_PHONE => '1']);
+        $response = self::post([Constants::FIELD['NAME'] => '', Constants::FIELD['EMAIL'] => 'x', Constants::FIELD['PHONE'] => '1']);
 
-        self::assertSame(Constants::HTTP_UNPROCESSABLE, $response['status']);
-        self::assertSame(Constants::VALIDATED_FIELDS, array_keys($response['json'][Constants::RESPONSE_ERRORS]));
+        self::assertSame(Constants::HTTP['UNPROCESSABLE'], $response['status']);
+        self::assertSame(Constants::VALIDATED_FIELDS, array_keys($response['json'][Constants::RESPONSE['ERRORS']]));
     }
 
     public function testDuplicateEmailIsRejectedIgnoringCase(): void
     {
         self::post(self::VALID_PERSON);
 
-        $response = self::post([Constants::FIELD_EMAIL => 'ANA@Mail.com', Constants::FIELD_PHONE => '091111111'] + self::VALID_PERSON);
+        $response = self::post([Constants::FIELD['EMAIL'] => 'ANA@Mail.com', Constants::FIELD['PHONE'] => '091111111'] + self::VALID_PERSON);
 
-        self::assertSame(Constants::HTTP_UNPROCESSABLE, $response['status']);
+        self::assertSame(Constants::HTTP['UNPROCESSABLE'], $response['status']);
         self::assertSame(
-            [Constants::FIELD_EMAIL => PersonValidator::message(Constants::FIELD_EMAIL, Constants::RULE_DUPLICATE)],
-            $response['json'][Constants::RESPONSE_ERRORS],
+            [Constants::FIELD['EMAIL'] => PersonValidator::message(Constants::FIELD['EMAIL'], Constants::RULE['DUPLICATE'])],
+            $response['json'][Constants::RESPONSE['ERRORS']],
         );
         self::assertSame(1, $this->total());
     }
@@ -229,22 +229,22 @@ final class ApiTest extends DatabaseTestCase
     {
         self::post(self::VALID_PERSON);
 
-        $response = self::post([Constants::FIELD_EMAIL => 'otra@mail.com'] + self::VALID_PERSON);
+        $response = self::post([Constants::FIELD['EMAIL'] => 'otra@mail.com'] + self::VALID_PERSON);
 
-        self::assertSame(Constants::HTTP_UNPROCESSABLE, $response['status']);
+        self::assertSame(Constants::HTTP['UNPROCESSABLE'], $response['status']);
         self::assertSame(
-            [Constants::FIELD_PHONE => PersonValidator::message(Constants::FIELD_PHONE, Constants::RULE_DUPLICATE)],
-            $response['json'][Constants::RESPONSE_ERRORS],
+            [Constants::FIELD['PHONE'] => PersonValidator::message(Constants::FIELD['PHONE'], Constants::RULE['DUPLICATE'])],
+            $response['json'][Constants::RESPONSE['ERRORS']],
         );
     }
 
     public function testSeveralPeopleCanOmitThePhone(): void
     {
-        $first = self::post([Constants::FIELD_PHONE => ''] + self::VALID_PERSON);
-        $second = self::post([Constants::FIELD_EMAIL => 'luis@mail.com', Constants::FIELD_PHONE => ''] + self::VALID_PERSON);
+        $first = self::post([Constants::FIELD['PHONE'] => ''] + self::VALID_PERSON);
+        $second = self::post([Constants::FIELD['EMAIL'] => 'luis@mail.com', Constants::FIELD['PHONE'] => ''] + self::VALID_PERSON);
 
-        self::assertSame(Constants::HTTP_CREATED, $first['status']);
-        self::assertSame(Constants::HTTP_CREATED, $second['status']);
+        self::assertSame(Constants::HTTP['CREATED'], $first['status']);
+        self::assertSame(Constants::HTTP['CREATED'], $second['status']);
     }
 
     public function testPaginatesAndClampsOutOfRangePages(): void
@@ -255,39 +255,39 @@ final class ApiTest extends DatabaseTestCase
         }
         self::pdo()->exec('INSERT INTO person (name, email) VALUES ' . implode(', ', $values));
 
-        $second = self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS . '?page=2')['json'];
-        $beyond = self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS . '?page=99')['json'];
+        $second = self::request(Constants::METHOD['GET'], Constants::ROUTE['PERSONS'] . '?page=2')['json'];
+        $beyond = self::request(Constants::METHOD['GET'], Constants::ROUTE['PERSONS'] . '?page=99')['json'];
 
-        self::assertCount(1, $second[Constants::RESPONSE_DATA]);
-        self::assertSame('Persona a', $second[Constants::RESPONSE_DATA][0][Constants::FIELD_NAME]);
-        self::assertSame([Constants::META_PAGE => 2, Constants::META_PER_PAGE => Constants::PAGE_SIZE, Constants::META_TOTAL => 9, Constants::META_TOTAL_PAGES => 2], $second[Constants::RESPONSE_META]);
-        self::assertSame(2, $beyond[Constants::RESPONSE_META][Constants::META_PAGE]);
+        self::assertCount(1, $second[Constants::RESPONSE['DATA']]);
+        self::assertSame('Persona a', $second[Constants::RESPONSE['DATA']][0][Constants::FIELD['NAME']]);
+        self::assertSame([Constants::META['PAGE'] => 2, Constants::META['PER_PAGE'] => Constants::PAGINATION['PAGE_SIZE'], Constants::META['TOTAL'] => 9, Constants::META['TOTAL_PAGES'] => 2], $second[Constants::RESPONSE['META']]);
+        self::assertSame(2, $beyond[Constants::RESPONSE['META']][Constants::META['PAGE']]);
     }
 
     public function testCrossSitePostsAreRejected(): void
     {
         $response = self::request(
-            Constants::METHOD_POST,
-            Constants::ROUTE_PERSONS,
+            Constants::METHOD['POST'],
+            Constants::ROUTE['PERSONS'],
             self::VALID_PERSON,
             headers: ['Sec-Fetch-Site: cross-site'],
         );
 
-        self::assertSame(Constants::HTTP_FORBIDDEN, $response['status']);
-        self::assertSame([Constants::RESPONSE_MESSAGE => Constants::MESSAGE_CROSS_SITE], $response['json']);
+        self::assertSame(Constants::HTTP['FORBIDDEN'], $response['status']);
+        self::assertSame([Constants::RESPONSE['MESSAGE'] => Constants::ERROR_MESSAGE['CROSS_SITE']], $response['json']);
         self::assertSame(0, $this->total());
     }
 
     public function testSameOriginPostsAreAccepted(): void
     {
         $response = self::request(
-            Constants::METHOD_POST,
-            Constants::ROUTE_PERSONS,
+            Constants::METHOD['POST'],
+            Constants::ROUTE['PERSONS'],
             self::VALID_PERSON,
             headers: ['Sec-Fetch-Site: same-origin'],
         );
 
-        self::assertSame(Constants::HTTP_CREATED, $response['status']);
+        self::assertSame(Constants::HTTP['CREATED'], $response['status']);
     }
 
     public static function unsupportedMethods(): array
@@ -298,10 +298,10 @@ final class ApiTest extends DatabaseTestCase
     #[DataProvider('unsupportedMethods')]
     public function testUnsupportedMethodsAreRejected(string $method): void
     {
-        $response = self::request($method, Constants::ROUTE_PERSONS);
+        $response = self::request($method, Constants::ROUTE['PERSONS']);
 
-        self::assertSame(Constants::HTTP_METHOD_NOT_ALLOWED, $response['status']);
-        self::assertSame(implode(', ', Constants::PERSONS_METHODS), $response['headers']['allow']);
+        self::assertSame(Constants::HTTP['METHOD_NOT_ALLOWED'], $response['status']);
+        self::assertSame(implode(', ', Constants::ROUTE_METHODS[Constants::ROUTE['PERSONS']]), $response['headers']['allow']);
     }
 
     public static function privatePaths(): array
@@ -319,21 +319,21 @@ final class ApiTest extends DatabaseTestCase
     #[DataProvider('privatePaths')]
     public function testPrivatePathsAreNotExposed(string $path): void
     {
-        $response = self::request(Constants::METHOD_GET, $path);
+        $response = self::request(Constants::METHOD['GET'], $path);
 
-        self::assertSame(Constants::HTTP_NOT_FOUND, $response['status']);
-        self::assertSame([Constants::RESPONSE_MESSAGE => Constants::MESSAGE_NOT_FOUND], $response['json']);
+        self::assertSame(Constants::HTTP['NOT_FOUND'], $response['status']);
+        self::assertSame([Constants::RESPONSE['MESSAGE'] => Constants::ERROR_MESSAGE['NOT_FOUND']], $response['json']);
     }
 
     private function total(): int
     {
-        return self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS)['json'][Constants::RESPONSE_META][Constants::META_TOTAL];
+        return self::request(Constants::METHOD['GET'], Constants::ROUTE['PERSONS'])['json'][Constants::RESPONSE['META']][Constants::META['TOTAL']];
     }
 
     /** @param array<string, string> $fields */
     private static function post(array $fields): array
     {
-        return self::request(Constants::METHOD_POST, Constants::ROUTE_PERSONS, $fields);
+        return self::request(Constants::METHOD['POST'], Constants::ROUTE['PERSONS'], $fields);
     }
 
     /**

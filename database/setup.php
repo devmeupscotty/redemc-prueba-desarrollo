@@ -8,7 +8,7 @@ use App\Database;
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 Database::loadEnvFile();
-$databaseName = Database::env(Constants::ENV_DB_NAME);
+$databaseName = Database::env(Constants::ENV_DB['NAME']);
 
 try {
     Database::createDatabase($databaseName);

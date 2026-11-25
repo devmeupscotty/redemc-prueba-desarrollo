@@ -25,10 +25,10 @@ final class App
         }
 
         try {
-            self::dispatch($path, $_SERVER['REQUEST_METHOD'] ?? Constants::METHOD_GET);
+            self::dispatch($path, $_SERVER['REQUEST_METHOD'] ?? Constants::METHOD['GET']);
         } catch (Throwable $exception) {
             error_log((string) $exception);
-            self::sendJson(Constants::HTTP_SERVER_ERROR, [Constants::RESPONSE_MESSAGE => Constants::MESSAGE_SERVER_ERROR]);
+            self::sendJson(Constants::HTTP['SERVER_ERROR'], [Constants::RESPONSE['MESSAGE'] => Constants::ERROR_MESSAGE['SERVER_ERROR']]);
         }
 
         return true;
@@ -36,35 +36,31 @@ final class App
 
     private static function dispatch(string $path, string $method): void
     {
-        $allowedMethods = match ($path) {
-            Constants::ROUTE_HOME => Constants::HOME_METHODS,
-            Constants::ROUTE_PERSONS => Constants::PERSONS_METHODS,
-            default => null,
-        };
+        $allowedMethods = Constants::ROUTE_METHODS[$path] ?? null;
 
         if ($allowedMethods === null) {
-            self::sendJson(Constants::HTTP_NOT_FOUND, [Constants::RESPONSE_MESSAGE => Constants::MESSAGE_NOT_FOUND]);
+            self::sendJson(Constants::HTTP['NOT_FOUND'], [Constants::RESPONSE['MESSAGE'] => Constants::ERROR_MESSAGE['NOT_FOUND']]);
             return;
         }
 
         if (!in_array($method, $allowedMethods, true)) {
             header('Allow: ' . implode(', ', $allowedMethods));
-            self::sendJson(Constants::HTTP_METHOD_NOT_ALLOWED, [Constants::RESPONSE_MESSAGE => Constants::MESSAGE_METHOD_NOT_ALLOWED]);
+            self::sendJson(Constants::HTTP['METHOD_NOT_ALLOWED'], [Constants::RESPONSE['MESSAGE'] => Constants::ERROR_MESSAGE['METHOD_NOT_ALLOWED']]);
             return;
         }
 
-        if ($method === Constants::METHOD_POST && self::isCrossSiteRequest()) {
-            self::sendJson(Constants::HTTP_FORBIDDEN, [Constants::RESPONSE_MESSAGE => Constants::MESSAGE_CROSS_SITE]);
+        if ($method === Constants::METHOD['POST'] && self::isCrossSiteRequest()) {
+            self::sendJson(Constants::HTTP['FORBIDDEN'], [Constants::RESPONSE['MESSAGE'] => Constants::ERROR_MESSAGE['CROSS_SITE']]);
             return;
         }
 
-        if ($path === Constants::ROUTE_HOME) {
+        if ($path === Constants::ROUTE['HOME']) {
             self::renderHome();
             return;
         }
 
         $controller = new PersonController(new PersonValidator(), new PersonRepository(Database::connect()));
-        [$status, $body] = $method === Constants::METHOD_POST
+        [$status, $body] = $method === Constants::METHOD['POST']
             ? $controller->store($_POST)
             : $controller->index($_GET);
 
@@ -77,16 +73,16 @@ final class App
      */
     private static function isCrossSiteRequest(): bool
     {
-        return ($_SERVER[Constants::FETCH_SITE_HEADER] ?? null) === Constants::FETCH_SITE_CROSS_SITE;
+        return ($_SERVER[Constants::FETCH_SITE['HEADER']] ?? null) === Constants::FETCH_SITE['CROSS_SITE'];
     }
 
     private static function renderHome(): void
     {
         $clientConfig = json_encode(PersonValidator::clientRules() + [
-            Constants::CONFIG_ENDPOINT => Constants::ROUTE_PERSONS,
-            Constants::CONFIG_PAGE_SIZE => Constants::PAGE_SIZE,
-            Constants::CONFIG_UNPROCESSABLE_STATUS => Constants::HTTP_UNPROCESSABLE,
-            Constants::CONFIG_SERVER_ERROR => Constants::MESSAGE_SERVER_ERROR,
+            Constants::CONFIG['ENDPOINT'] => Constants::ROUTE['PERSONS'],
+            Constants::CONFIG['PAGE_SIZE'] => Constants::PAGINATION['PAGE_SIZE'],
+            Constants::CONFIG['UNPROCESSABLE_STATUS'] => Constants::HTTP['UNPROCESSABLE'],
+            Constants::CONFIG['SERVER_ERROR'] => Constants::ERROR_MESSAGE['SERVER_ERROR'],
         ], self::INLINE_JSON_FLAGS);
 
         header('Content-Type: text/html; charset=utf-8');

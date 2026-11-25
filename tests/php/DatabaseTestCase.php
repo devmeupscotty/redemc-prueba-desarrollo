@@ -16,7 +16,7 @@ abstract class DatabaseTestCase extends TestCase
     protected static function pdo(): PDO
     {
         if (self::$pdo === null) {
-            Database::createDatabase(Database::env(Constants::ENV_DB_NAME));
+            Database::createDatabase(Database::env(Constants::ENV_DB['NAME']));
             self::$pdo = Database::connect();
             Database::applySchema(self::$pdo);
         }

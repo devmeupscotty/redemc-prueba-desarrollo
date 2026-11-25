@@ -65,7 +65,7 @@ final class PersonRepositoryTest extends DatabaseTestCase
     {
         $this->seed(3);
 
-        $names = array_map(static fn (Person $person) => $person->name, $this->repository->findPage(Constants::PAGE_SIZE, 0));
+        $names = array_map(static fn (Person $person) => $person->name, $this->repository->findPage(Constants::PAGINATION['PAGE_SIZE'], 0));
 
         self::assertSame(['Persona c', 'Persona b', 'Persona a'], $names);
     }
@@ -74,10 +74,10 @@ final class PersonRepositoryTest extends DatabaseTestCase
     {
         $this->seed(10);
 
-        $firstPage = $this->repository->findPage(Constants::PAGE_SIZE, 0);
-        $secondPage = $this->repository->findPage(Constants::PAGE_SIZE, Constants::PAGE_SIZE);
+        $firstPage = $this->repository->findPage(Constants::PAGINATION['PAGE_SIZE'], 0);
+        $secondPage = $this->repository->findPage(Constants::PAGINATION['PAGE_SIZE'], Constants::PAGINATION['PAGE_SIZE']);
 
-        self::assertCount(Constants::PAGE_SIZE, $firstPage);
+        self::assertCount(Constants::PAGINATION['PAGE_SIZE'], $firstPage);
         self::assertCount(2, $secondPage);
         self::assertSame('Persona j', $firstPage[0]->name);
         self::assertSame('Persona a', $secondPage[1]->name);
@@ -87,31 +87,31 @@ final class PersonRepositoryTest extends DatabaseTestCase
     {
         $this->seed(2);
 
-        self::assertSame([], $this->repository->findPage(Constants::PAGE_SIZE, Constants::PAGE_SIZE));
+        self::assertSame([], $this->repository->findPage(Constants::PAGINATION['PAGE_SIZE'], Constants::PAGINATION['PAGE_SIZE']));
     }
 
     public function testExistsByFindsEmailsIgnoringCase(): void
     {
         $this->repository->create(new Person('Ana', 'ana@mail.com'));
 
-        self::assertTrue($this->repository->existsBy(Constants::FIELD_EMAIL, 'ana@mail.com'));
-        self::assertTrue($this->repository->existsBy(Constants::FIELD_EMAIL, 'ANA@Mail.COM'));
-        self::assertFalse($this->repository->existsBy(Constants::FIELD_EMAIL, 'otra@mail.com'));
+        self::assertTrue($this->repository->existsBy(Constants::FIELD['EMAIL'], 'ana@mail.com'));
+        self::assertTrue($this->repository->existsBy(Constants::FIELD['EMAIL'], 'ANA@Mail.COM'));
+        self::assertFalse($this->repository->existsBy(Constants::FIELD['EMAIL'], 'otra@mail.com'));
     }
 
     public function testExistsByFindsPhones(): void
     {
         $this->repository->create(new Person('Ana', 'ana@mail.com', '097680102'));
 
-        self::assertTrue($this->repository->existsBy(Constants::FIELD_PHONE, '097680102'));
-        self::assertFalse($this->repository->existsBy(Constants::FIELD_PHONE, '091111111'));
+        self::assertTrue($this->repository->existsBy(Constants::FIELD['PHONE'], '097680102'));
+        self::assertFalse($this->repository->existsBy(Constants::FIELD['PHONE'], '091111111'));
     }
 
     public function testExistsByRejectsNonUniqueFields(): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $this->repository->existsBy(Constants::FIELD_NAME, 'Ana');
+        $this->repository->existsBy(Constants::FIELD['NAME'], 'Ana');
     }
 
     public function testAllowsManyPeopleWithoutPhone(): void
@@ -128,7 +128,7 @@ final class PersonRepositoryTest extends DatabaseTestCase
 
         $exception = $this->captureDuplicate(new Person('Ana Dos', 'ANA@MAIL.COM'));
 
-        self::assertSame(Constants::FIELD_EMAIL, $this->repository->duplicateFieldFrom($exception));
+        self::assertSame(Constants::FIELD['EMAIL'], $this->repository->duplicateFieldFrom($exception));
     }
 
     public function testDatabaseRejectsDuplicatePhone(): void
@@ -137,7 +137,7 @@ final class PersonRepositoryTest extends DatabaseTestCase
 
         $exception = $this->captureDuplicate(new Person('Luis', 'luis@mail.com', '097680102'));
 
-        self::assertSame(Constants::FIELD_PHONE, $this->repository->duplicateFieldFrom($exception));
+        self::assertSame(Constants::FIELD['PHONE'], $this->repository->duplicateFieldFrom($exception));
     }
 
     public function testDuplicateFieldFromIgnoresOtherErrors(): void
