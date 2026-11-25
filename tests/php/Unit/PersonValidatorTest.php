@@ -25,49 +25,36 @@ final class PersonValidatorTest extends TestCase
         $this->validator = new PersonValidator();
     }
 
+    private const CASES_FILE = __DIR__ . '/../../fixtures/validation-cases.json';
+
     public static function validNames(): array
     {
-        return self::cases([
-            'Ana', 'José', 'María José', 'Ñandú', 'Güemes', 'ÁÉÍÓÚ áéíóú', 'Ana Laura Pérez Núñez',
-            'a', "Ana\tLaura", '  Ana  ', 'Ana    Laura', str_repeat('a', 100),
-        ]);
+        return self::cases(Constants::FIELD_NAME, 'valid');
     }
 
     public static function invalidNameFormats(): array
     {
-        return self::cases([
-            'Ana2', 'Ana-María', "O'Neil", 'Ana_Laura', '<script>', 'Ana.', 'Jean@', '😀', 'Иван', 'Zoë', 'Ana, Laura', '123',
-        ]);
+        return self::cases(Constants::FIELD_NAME, 'invalid');
     }
 
     public static function validEmails(): array
     {
-        return self::cases([
-            'ana@mail.com', 'ana.laura@mail.com', 'ana+tag@mail.com', 'ana_l@sub.mail.com.uy', 'a%b@x-y.co',
-            'ANA@MAIL.COM', '123@mail.io', 'a@b.cd', '  ana@mail.com  ', 'first.middle.last@domain.travel',
-        ]);
+        return self::cases(Constants::FIELD_EMAIL, 'valid');
     }
 
     public static function invalidEmailFormats(): array
     {
-        return self::cases([
-            'ana', 'ana@', '@mail.com', 'ana@mail', 'ana..b@mail.com', '.ana@mail.com', 'ana.@mail.com',
-            'ana@-mail.com', 'ana@mail-.com', 'ana@mail.c', 'ana@mail..com', 'ana mail@x.com', 'ana@mail.com.',
-            'ana@@mail.com', 'añá@mail.com', 'ana@mail.123', '<a>@mail.com',
-        ]);
+        return self::cases(Constants::FIELD_EMAIL, 'invalid');
     }
 
     public static function validPhones(): array
     {
-        return self::cases(['097680102', '091234567', '099999999', '090000000', ' 097680102 ']);
+        return self::cases(Constants::FIELD_PHONE, 'valid');
     }
 
     public static function invalidPhoneFormats(): array
     {
-        return self::cases([
-            '97680102', '0976801020', '097 680 102', '097-680-102', '+59897680102', '59897680102', '087680102',
-            '09768010a', '０９７６８０１０２', '0', '09', '(09)7680102',
-        ]);
+        return self::cases(Constants::FIELD_PHONE, 'invalid');
     }
 
     #[DataProvider('validNames')]
@@ -108,7 +95,7 @@ final class PersonValidatorTest extends TestCase
 
     public static function emptyValues(): array
     {
-        return self::cases(['', ' ', "   \t  "]);
+        return self::cases('empty');
     }
 
     #[DataProvider('emptyValues')]
@@ -131,6 +118,7 @@ final class PersonValidatorTest extends TestCase
     {
         $tooLongEmail = str_repeat('a', 64) . '@' . str_repeat('b', 60) . '.' . str_repeat('c', 60) . '.' . str_repeat('d', 70) . '.com';
 
+        $this->assertNoErrorFor(Constants::FIELD_NAME, str_repeat('ñ', Constants::MAX_LENGTH[Constants::FIELD_NAME]));
         $this->assertErrorFor(Constants::FIELD_NAME, str_repeat('a', 101), Constants::RULE_LENGTH);
         $this->assertErrorFor(Constants::FIELD_EMAIL, $tooLongEmail, Constants::RULE_LENGTH);
     }
@@ -236,9 +224,13 @@ final class PersonValidatorTest extends TestCase
         self::assertSame(PersonValidator::message($field, $rule), $errors[$field] ?? null, "Wrong result for \"{$value}\"");
     }
 
-    /** @param list<string> $values */
-    private static function cases(array $values): array
+    private static function cases(string ...$path): array
     {
+        $values = json_decode(file_get_contents(self::CASES_FILE), true, flags: JSON_THROW_ON_ERROR);
+        foreach ($path as $key) {
+            $values = $values[$key];
+        }
+
         $cases = [];
         foreach ($values as $value) {
             $cases[json_encode($value, JSON_UNESCAPED_UNICODE)] = [$value];
