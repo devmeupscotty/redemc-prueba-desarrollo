@@ -83,7 +83,7 @@ $createdAt = Constants::FIELD_CREATED_AT;
                         <div>Teléfono</div>
                         <div>Fecha de ingreso</div>
                     </div>
-                    <div id="person-rows" role="list" aria-live="polite" aria-busy="true"></div>
+                    <div id="person-rows" role="list" aria-busy="true"></div>
                 </div>
 
                 <nav class="list-pagination" aria-label="Paginación del listado">

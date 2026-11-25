@@ -94,6 +94,7 @@ describe('list states', () => {
 
         expect($('#person-rows b')).toHaveLength(0);
         expect($('#person-rows .list-empty').text()).toBe('<b>x</b>');
+        expect($('#person-rows .list-empty').attr('role')).toBe('listitem');
     });
 });
 
@@ -165,6 +166,25 @@ describe('createList', () => {
 
         expect(api.list).toHaveBeenLastCalledWith(2);
         expect($('#pagination [aria-current="page"]').text()).toBe('2');
+    });
+
+    it('keeps keyboard focus on the pagination after changing page', () => {
+        const api = { list: vi.fn((page) => resolved({ data: [person({ id: page })], meta: { page, perPage: 8, total: 9, totalPages: 2 } })) };
+        listFor(api).loadPage(1);
+
+        $('#pagination button[aria-label="Página 2"]').trigger('focus').trigger('click');
+
+        expect(document.activeElement.getAttribute('aria-current')).toBe('page');
+        expect(document.activeElement.textContent).toBe('2');
+    });
+
+    it('does not steal focus when the list reloads for other reasons', () => {
+        const api = { list: () => resolved({ data: [person()], meta: { page: 1, perPage: 8, total: 9, totalPages: 2 } }) };
+        $('#name').trigger('focus');
+
+        listFor(api).loadPage(1);
+
+        expect(document.activeElement.id).toBe('name');
     });
 
     it('shows the empty state and a singular total', () => {
