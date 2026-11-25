@@ -23,8 +23,11 @@ public/            Única carpeta expuesta a la web (DocumentRoot)
   index.php        Front controller (2 líneas)
   .htaccess        Ruteo al front controller + headers de seguridad
   css/app.css      Estilos propios (tokens en variables CSS)
+  js/app.js        Punto de entrada: lee la configuración y conecta los módulos
+  js/api.js        Llamadas AJAX al endpoint
+  js/form.js       Formulario: validación en vivo, envío y errores
+  js/list.js       Listado, paginado y estados de carga
   js/validator.js  Validación del cliente, construida con las reglas del servidor
-  js/app.js        API, formulario, listado y paginado
 src/               Código PHP (fuera del DocumentRoot)
   App.php          Ruteo, armado de dependencias, respuestas JSON y manejo de errores
   Constants.php    Regex, mensajes, límites, códigos HTTP, rutas: todo valor con nombre
