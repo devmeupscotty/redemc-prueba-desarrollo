@@ -24,7 +24,7 @@ final class Database
             $dsn .= ';dbname=' . $databaseName;
         }
 
-        $pdo = new PDO($dsn, self::env('DB_USER'), self::env('DB_PASSWORD'), [
+        $pdo = new PDO($dsn, self::env('DB_USER'), self::env('DB_PASSWORD', ''), [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,

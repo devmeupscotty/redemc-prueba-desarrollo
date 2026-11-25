@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Api;
 
 use App\Constants;
-use App\Database;
 use App\PersonValidator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
@@ -35,7 +34,10 @@ final class ApiTest extends DatabaseTestCase
 
         $environment = getenv();
         foreach (self::DB_VARIABLES as $variable) {
-            $environment[$variable] = Database::env($variable, Constants::DB_DEFAULT_PORT);
+            $value = getenv($variable);
+            if ($value !== false) {
+                $environment[$variable] = $value;
+            }
         }
 
         $root = realpath(self::PROJECT_ROOT);
