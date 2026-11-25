@@ -13,6 +13,12 @@ final class Constants
 
     public const PAGE_SIZE = 8;
 
+    public const DUPLICATE_ENTRY_ERROR = 1062;
+    public const DUPLICATE_KEYS = [
+        'uq_person_email' => self::FIELD_EMAIL,
+        'uq_person_phone' => self::FIELD_PHONE,
+    ];
+
     public const FIELD_ID = 'id';
     public const FIELD_NAME = 'name';
     public const FIELD_EMAIL = 'email';

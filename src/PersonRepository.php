@@ -59,6 +59,21 @@ class PersonRepository
         return $statement->fetchColumn() !== false;
     }
 
+    public function duplicateFieldFrom(PDOException $exception): ?string
+    {
+        if ((int) ($exception->errorInfo[1] ?? 0) !== Constants::DUPLICATE_ENTRY_ERROR) {
+            return null;
+        }
+
+        foreach (Constants::DUPLICATE_KEYS as $key => $field) {
+            if (str_contains($exception->getMessage(), $key)) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
     private function findById(int $id): Person
     {
         $statement = $this->pdo->prepare(self::SELECT_COLUMNS . ' WHERE id = :id');
