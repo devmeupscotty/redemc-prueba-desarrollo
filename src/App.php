@@ -53,6 +53,11 @@ final class App
             return;
         }
 
+        if ($method === Constants::METHOD_POST && self::isCrossSiteRequest()) {
+            self::sendJson(Constants::HTTP_FORBIDDEN, [Constants::RESPONSE_MESSAGE => Constants::MESSAGE_CROSS_SITE]);
+            return;
+        }
+
         if ($path === Constants::ROUTE_HOME) {
             self::renderHome();
             return;
@@ -64,6 +69,15 @@ final class App
             : $controller->index($_GET);
 
         self::sendJson($status, $body);
+    }
+
+    /**
+     * There are no sessions or cookies to protect, but this stops other sites from
+     * making their visitors' browsers submit the form (spam via cross-site POSTs).
+     */
+    private static function isCrossSiteRequest(): bool
+    {
+        return ($_SERVER[Constants::FETCH_SITE_HEADER] ?? null) === Constants::FETCH_SITE_CROSS_SITE;
     }
 
     private static function renderHome(): void

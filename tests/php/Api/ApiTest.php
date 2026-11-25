@@ -244,6 +244,32 @@ final class ApiTest extends DatabaseTestCase
         self::assertSame(2, $beyond[Constants::RESPONSE_META][Constants::META_PAGE]);
     }
 
+    public function testCrossSitePostsAreRejected(): void
+    {
+        $response = self::request(
+            Constants::METHOD_POST,
+            Constants::ROUTE_PERSONS,
+            self::VALID_PERSON,
+            headers: ['Sec-Fetch-Site: cross-site'],
+        );
+
+        self::assertSame(Constants::HTTP_FORBIDDEN, $response['status']);
+        self::assertSame([Constants::RESPONSE_MESSAGE => Constants::MESSAGE_CROSS_SITE], $response['json']);
+        self::assertSame(0, $this->total());
+    }
+
+    public function testSameOriginPostsAreAccepted(): void
+    {
+        $response = self::request(
+            Constants::METHOD_POST,
+            Constants::ROUTE_PERSONS,
+            self::VALID_PERSON,
+            headers: ['Sec-Fetch-Site: same-origin'],
+        );
+
+        self::assertSame(Constants::HTTP_CREATED, $response['status']);
+    }
+
     public static function unsupportedMethods(): array
     {
         return ['PUT' => ['PUT'], 'DELETE' => ['DELETE'], 'PATCH' => ['PATCH']];
@@ -292,13 +318,19 @@ final class ApiTest extends DatabaseTestCase
 
     /**
      * @param array<string, string> $fields
+     * @param list<string> $headers
      * @return array{status: int, headers: array<string, string>, json: mixed, body: string}
      */
-    private static function request(string $method, string $path, array $fields = [], bool $raw = false): array
-    {
+    private static function request(
+        string $method,
+        string $path,
+        array $fields = [],
+        bool $raw = false,
+        array $headers = [],
+    ): array {
         $context = stream_context_create(['http' => [
             'method' => $method,
-            'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
+            'header' => implode("\r\n", ['Content-Type: application/x-www-form-urlencoded', ...$headers]) . "\r\n",
             'content' => http_build_query($fields),
             'ignore_errors' => true,
             'timeout' => self::REQUEST_TIMEOUT_SECONDS,
@@ -306,15 +338,15 @@ final class ApiTest extends DatabaseTestCase
         $body = file_get_contents(sprintf('http://%s:%d%s', self::HOST, self::PORT, $path), false, $context);
 
         $statusLine = array_shift($http_response_header);
-        $headers = [];
+        $responseHeaders = [];
         foreach ($http_response_header as $line) {
             [$name, $value] = array_map('trim', explode(':', $line, 2));
-            $headers[strtolower($name)] = $value;
+            $responseHeaders[strtolower($name)] = $value;
         }
 
         return [
             'status' => (int) explode(' ', $statusLine)[1],
-            'headers' => $headers,
+            'headers' => $responseHeaders,
             'json' => $raw ? null : json_decode((string) $body, true),
             'body' => (string) $body,
         ];

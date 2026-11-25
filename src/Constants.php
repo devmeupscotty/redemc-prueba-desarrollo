@@ -39,12 +39,17 @@ final class Constants
     public const HOME_METHODS = [self::METHOD_GET, self::METHOD_HEAD];
     public const PERSONS_METHODS = [self::METHOD_GET, self::METHOD_HEAD, self::METHOD_POST];
 
+    public const FETCH_SITE_HEADER = 'HTTP_SEC_FETCH_SITE';
+    public const FETCH_SITE_CROSS_SITE = 'cross-site';
+
     public const MESSAGE_NOT_FOUND = 'Recurso no encontrado.';
+    public const MESSAGE_CROSS_SITE = 'No se aceptan envíos desde otros sitios.';
     public const MESSAGE_METHOD_NOT_ALLOWED = 'Método no permitido.';
     public const MESSAGE_SERVER_ERROR = 'Ocurrió un error inesperado. Intentá nuevamente en unos instantes.';
 
     public const HTTP_OK = 200;
     public const HTTP_CREATED = 201;
+    public const HTTP_FORBIDDEN = 403;
     public const HTTP_NOT_FOUND = 404;
     public const HTTP_METHOD_NOT_ALLOWED = 405;
     public const HTTP_UNPROCESSABLE = 422;
