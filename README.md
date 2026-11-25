@@ -48,13 +48,16 @@ tests/             PHPUnit (unit, integration, api) y Vitest
 
 ## Seguridad
 
-- Solo `public/` es accesible desde la web; el código, las plantillas, `vendor/` y `.env` quedan fuera.
+- Solo `public/` es accesible desde la web (es el DocumentRoot de Apache); el código, las plantillas, `vendor/` y `.env` quedan fuera.
 - Consultas preparadas con PDO (sin emulación) contra inyección SQL.
-- Los datos se insertan en el DOM únicamente con `.text()`; además hay Content-Security-Policy.
+- Los datos se insertan en el DOM únicamente con `.text()`, como defensa contra XSS.
+- Content-Security-Policy que solo permite scripts propios y las versiones fijadas de jQuery y Bootstrap en jsDelivr, cargadas además con Subresource Integrity.
 - Credenciales solo en variables de entorno.
 - Errores inesperados: se registran en el log y el cliente recibe un mensaje genérico.
-- Bootstrap y jQuery se cargan desde CDN con Subresource Integrity.
-- Headers: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security`; `php.ini` de producción.
+- Límites de tamaño de las peticiones en PHP y Apache; `php.ini` de producción.
+- Headers: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security`.
+
+**¿Y CSRF?** La aplicación no tiene sesiones, cookies ni usuarios autenticados, así que no hay una credencial que un sitio externo pueda aprovechar; un token CSRF no protegería nada. El riesgo real es que otra página haga que el navegador de sus visitantes envíe el formulario (spam). Para eso el servidor rechaza con `403` los `POST` que el navegador marca como `Sec-Fetch-Site: cross-site`.
 
 ## Desarrollo local
 
@@ -88,7 +91,7 @@ Ejecuta PHPUnit y Vitest:
 
 - **Unit (PHP):** validador (casos válidos e inválidos por campo, normalización, errores combinados) y controlador con repositorio simulado.
 - **Integración (PHP):** repositorio contra MySQL real (orden, paginado, unicidad sin distinguir mayúsculas, teléfonos `NULL`, colisiones de clave).
-- **API (PHP):** levanta el servidor embebido y prueba por HTTP: alta → el total aumenta en uno y el registro queda primero, cada error devuelve 422 con su mensaje, 405/404, paginado y que no se expongan archivos privados.
+- **API (PHP):** levanta el servidor embebido de PHP y prueba por HTTP: alta → el total aumenta en uno y el registro queda primero, cada error devuelve 422 con su mensaje, 403 para envíos desde otros sitios, 405/404, `HEAD`, paginado, que la página no use tablas y que el front controller no sirva archivos privados (en producción eso lo garantiza además el DocumentRoot de Apache).
 - **JavaScript (Vitest + jsdom):** paridad del validador con las reglas del servidor, renderizado seguro, paginado y comportamiento del formulario.
 
 Los casos de validación están en `tests/fixtures/validation-cases.json` y los usan tanto los tests de PHP como los de JavaScript. Los tests de base de datos usan `DB_TEST_NAME` y se niegan a correr si el nombre no termina en `_test`, para no tocar datos reales.
