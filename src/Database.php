@@ -16,38 +16,38 @@ final class Database
     {
         self::loadEnvFile();
 
-        $databaseName ??= self::env(Constants::ENV_DB_NAME);
+        $databaseName ??= self::env(Constants::ENV_DB['NAME']);
         $dsn = sprintf(
             'mysql:host=%s;port=%s;charset=%s',
-            self::env(Constants::ENV_DB_HOST),
-            self::env(Constants::ENV_DB_PORT, Constants::DB_DEFAULT_PORT),
-            Constants::DB_CHARSET,
+            self::env(Constants::ENV_DB['HOST']),
+            self::env(Constants::ENV_DB['PORT'], Constants::DB['DEFAULT_PORT']),
+            Constants::DB['CHARSET'],
         );
         if ($databaseName !== '') {
             $dsn .= ';dbname=' . $databaseName;
         }
 
-        $pdo = new PDO($dsn, self::env(Constants::ENV_DB_USER), self::env(Constants::ENV_DB_PASSWORD, ''), [
+        $pdo = new PDO($dsn, self::env(Constants::ENV_DB['USER']), self::env(Constants::ENV_DB['PASSWORD'], ''), [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
         ]);
-        $pdo->exec(sprintf("SET time_zone = '%s'", Constants::DB_TIME_ZONE));
+        $pdo->exec(sprintf("SET time_zone = '%s'", Constants::DB['TIME_ZONE']));
 
         return $pdo;
     }
 
     public static function createDatabase(string $name): void
     {
-        if (preg_match(Constants::DATABASE_NAME_PATTERN, $name) !== 1) {
+        if (preg_match(Constants::DB['NAME_PATTERN'], $name) !== 1) {
             throw new InvalidArgumentException("Invalid database name: {$name}");
         }
 
         self::connect('')->exec(sprintf(
             'CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET %s COLLATE %s',
             $name,
-            Constants::DB_CHARSET,
-            Constants::DB_COLLATION,
+            Constants::DB['CHARSET'],
+            Constants::DB['COLLATION'],
         ));
     }
 

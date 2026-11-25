@@ -34,9 +34,9 @@ final class PersonValidator
         }
 
         return [new Person(
-            $data[Constants::FIELD_NAME],
-            $data[Constants::FIELD_EMAIL],
-            $data[Constants::FIELD_PHONE],
+            $data[Constants::FIELD['NAME']],
+            $data[Constants::FIELD['EMAIL']],
+            $data[Constants::FIELD['PHONE']],
         ), []];
     }
 
@@ -56,14 +56,14 @@ final class PersonValidator
         }
 
         return [
-            Constants::CONFIG_FIELDS => Constants::VALIDATED_FIELDS,
-            Constants::CONFIG_REQUIRED => Constants::REQUIRED_FIELDS,
-            Constants::CONFIG_PATTERNS => Constants::PATTERNS,
-            Constants::CONFIG_FLAGS => Constants::PATTERN_FLAGS,
-            Constants::CONFIG_MAX_LENGTH => Constants::MAX_LENGTH,
-            Constants::CONFIG_COLLAPSE_WHITESPACE => Constants::COLLAPSE_WHITESPACE_FIELDS,
-            Constants::CONFIG_LOWERCASE => Constants::LOWERCASE_FIELDS,
-            Constants::CONFIG_MESSAGES => $messages,
+            Constants::CONFIG['FIELDS'] => Constants::VALIDATED_FIELDS,
+            Constants::CONFIG['REQUIRED'] => Constants::REQUIRED_FIELDS,
+            Constants::CONFIG['PATTERNS'] => Constants::PATTERNS,
+            Constants::CONFIG['FLAGS'] => Constants::PATTERN_FLAGS,
+            Constants::CONFIG['MAX_LENGTH'] => Constants::MAX_LENGTH,
+            Constants::CONFIG['COLLAPSE_WHITESPACE'] => Constants::COLLAPSE_WHITESPACE_FIELDS,
+            Constants::CONFIG['LOWERCASE'] => Constants::LOWERCASE_FIELDS,
+            Constants::CONFIG['MESSAGES'] => $messages,
         ];
     }
 
@@ -91,15 +91,15 @@ final class PersonValidator
     private function failedRule(string $field, ?string $value): ?string
     {
         if ($value === null || $value === '') {
-            return in_array($field, Constants::REQUIRED_FIELDS, true) ? Constants::RULE_REQUIRED : null;
+            return in_array($field, Constants::REQUIRED_FIELDS, true) ? Constants::RULE['REQUIRED'] : null;
         }
 
         $maxLength = Constants::MAX_LENGTH[$field] ?? null;
         if ($maxLength !== null && mb_strlen($value) > $maxLength) {
-            return Constants::RULE_LENGTH;
+            return Constants::RULE['LENGTH'];
         }
 
-        return preg_match(self::serverPattern($field), $value) === 1 ? null : Constants::RULE_FORMAT;
+        return preg_match(self::serverPattern($field), $value) === 1 ? null : Constants::RULE['FORMAT'];
     }
 
     /**

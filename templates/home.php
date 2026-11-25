@@ -3,10 +3,10 @@
 use App\Constants;
 
 /** @var string $clientConfig */
-$name = Constants::FIELD_NAME;
-$email = Constants::FIELD_EMAIL;
-$phone = Constants::FIELD_PHONE;
-$createdAt = Constants::FIELD_CREATED_AT;
+$name = Constants::FIELD['NAME'];
+$email = Constants::FIELD['EMAIL'];
+$phone = Constants::FIELD['PHONE'];
+$createdAt = Constants::FIELD['CREATED_AT'];
 ?>
 <!doctype html>
 <html lang="es">
@@ -37,7 +37,7 @@ $createdAt = Constants::FIELD_CREATED_AT;
                 <h2 class="panel-title" id="form-title">Ingreso de datos</h2>
                 <p class="required-legend"><span class="required-mark" aria-hidden="true">*</span> Campos obligatorios</p>
 
-                <form id="person-form" method="post" action="<?= Constants::ROUTE_PERSONS ?>" novalidate>
+                <form id="person-form" method="post" action="<?= Constants::ROUTE['PERSONS'] ?>" novalidate>
                     <div class="form-floating field">
                         <input type="text" class="form-control" id="<?= $name ?>" name="<?= $name ?>" placeholder="Nombre"
                                maxlength="<?= Constants::MAX_LENGTH[$name] ?>" autocomplete="name" required aria-required="true" aria-describedby="<?= $name ?>-error">
