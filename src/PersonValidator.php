@@ -9,7 +9,8 @@ use Normalizer;
 final class PersonValidator
 {
     private const PATTERN_DELIMITER = '/';
-    private const WHITESPACE_RUN = '/\s+/u';
+    private const EDGE_WHITESPACE = '/^[\s\x{FEFF}]+|[\s\x{FEFF}]+$/u';
+    private const WHITESPACE_RUN = '/[\s\x{FEFF}]+/u';
 
     /**
      * @param array<string, mixed> $input
@@ -104,7 +105,7 @@ final class PersonValidator
             return '';
         }
 
-        $value = trim($value);
+        $value = preg_replace(self::EDGE_WHITESPACE, '', $value) ?? $value;
         if (class_exists(Normalizer::class)) {
             $value = Normalizer::normalize($value, Normalizer::FORM_C) ?: $value;
         }
