@@ -182,7 +182,7 @@ export function renderSkeleton($container, count, template) {
 }
 
 export function renderMessage($container, message) {
-    $container.empty().append($('<div>').addClass(CSS.empty).text(message));
+    $container.empty().append($('<div role="listitem">').addClass(CSS.empty).text(message));
 }
 
 export function pageWindow(current, total, radius = PAGE_WINDOW_RADIUS) {
@@ -234,6 +234,7 @@ export function createList({ $rows, $pagination, $total, template, api, pageSize
     let currentPage = FIRST_PAGE;
 
     function loadPage(page) {
+        const keepPaginationFocus = $pagination[0].contains(document.activeElement);
         $rows.attr('aria-busy', 'true');
         renderSkeleton($rows, pageSize, template);
 
@@ -248,6 +249,9 @@ export function createList({ $rows, $pagination, $total, template, api, pageSize
                 renderPagination($pagination, meta);
                 $total.text(TEXT.total(meta.total));
                 $rows.attr('aria-busy', 'false');
+                if (keepPaginationFocus) {
+                    $pagination.find('[aria-current="page"]').trigger('focus');
+                }
             })
             .fail((xhr) => {
                 if (xhr.statusText !== ABORTED) {

@@ -15,6 +15,7 @@ $createdAt = Constants::FIELD_CREATED_AT;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Registro de personas con validación y listado paginado.">
     <title>Registro de personas</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ccircle cx='16' cy='12' r='5' fill='%23fff'/%3E%3Cpath d='M7 26c1.5-5 5-7 9-7s7.5 2 9 7' fill='%23fff'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
@@ -83,7 +84,7 @@ $createdAt = Constants::FIELD_CREATED_AT;
                         <div>Teléfono</div>
                         <div>Fecha de ingreso</div>
                     </div>
-                    <div id="person-rows" role="list" aria-live="polite" aria-busy="true"></div>
+                    <div id="person-rows" role="list" aria-busy="true"></div>
                 </div>
 
                 <nav class="list-pagination" aria-label="Paginación del listado">
@@ -105,9 +106,9 @@ $createdAt = Constants::FIELD_CREATED_AT;
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3">
     <div class="toast align-items-center border-0 toast-success" id="success-toast" role="status" aria-live="polite" aria-atomic="true">
-        <div class="d-flex">
+        <div class="d-flex" data-bs-theme="dark">
             <div class="toast-body">Registro guardado correctamente.</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
         </div>
     </div>
 </div>
