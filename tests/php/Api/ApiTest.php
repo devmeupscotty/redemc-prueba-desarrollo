@@ -31,6 +31,10 @@ final class ApiTest extends DatabaseTestCase
     {
         self::pdo();
 
+        if (self::isPortOpen()) {
+            throw new RuntimeException('Port ' . self::PORT . ' is already in use; stop that process before running the API tests.');
+        }
+
         $environment = getenv();
         foreach (Constants::ENV_DB_VARIABLES as $variable) {
             $value = getenv($variable);
@@ -51,15 +55,24 @@ final class ApiTest extends DatabaseTestCase
 
         $deadline = time() + self::STARTUP_TIMEOUT_SECONDS;
         while (time() < $deadline) {
-            $socket = @fsockopen(self::HOST, self::PORT);
-            if ($socket !== false) {
-                fclose($socket);
+            if (self::isPortOpen()) {
                 return;
             }
             usleep(100_000);
         }
 
         throw new RuntimeException('The PHP built-in server did not start; see ' . $log);
+    }
+
+    private static function isPortOpen(): bool
+    {
+        $socket = @fsockopen(self::HOST, self::PORT);
+        if ($socket === false) {
+            return false;
+        }
+        fclose($socket);
+
+        return true;
     }
 
     public static function tearDownAfterClass(): void
@@ -85,6 +98,13 @@ final class ApiTest extends DatabaseTestCase
         self::assertSame(Constants::PAGE_SIZE, $config[Constants::CONFIG_PAGE_SIZE]);
         self::assertSame(Constants::HTTP_UNPROCESSABLE, $config[Constants::CONFIG_UNPROCESSABLE_STATUS]);
         self::assertSame(Constants::MESSAGE_SERVER_ERROR, $config[Constants::CONFIG_SERVER_ERROR]);
+    }
+
+    public function testHomePageLayoutUsesNoTables(): void
+    {
+        $response = self::request(Constants::METHOD_GET, Constants::ROUTE_HOME, raw: true);
+
+        self::assertDoesNotMatchRegularExpression('/<(table|tr|td|th)\b/i', $response['body']);
     }
 
     public function testHomePageOnlyAcceptsGet(): void
