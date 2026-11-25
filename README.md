@@ -35,6 +35,7 @@ src/               Código PHP (fuera del DocumentRoot)
   PersonController.php  Casos de uso: listar paginado y crear
 templates/home.php Página HTML
 database/schema.sql Estructura de la tabla
+database/setup.php  Crea la base y la tabla (npm run db:setup)
 tests/             PHPUnit (unit, integration, api) y Vitest
 ```
 
@@ -57,16 +58,25 @@ tests/             PHPUnit (unit, integration, api) y Vitest
 
 ## Desarrollo local
 
-Requisitos: PHP 8.3 con `pdo_mysql`, `mbstring` e `intl`; Composer; Node.js; acceso a un MySQL (en este proyecto se usa el de Railway mediante su acceso público).
+**Requisitos:** PHP 8.3 (con `pdo_mysql`, `mbstring` e `intl`), Composer, Node.js y un servidor MySQL 8 accesible (local o, como en este proyecto, el de Railway mediante su acceso público).
 
 ```bash
-composer install
-npm install
-cp .env.example .env    # completar host, puerto, usuario y contraseña
-php -S localhost:8000 -t public public/index.php
+git clone https://github.com/devmeupscotty/redemc-prueba-desarrollo.git
+cd redemc-prueba-desarrollo
+npm install          # instala dependencias de JS y, automáticamente, las de PHP (composer install)
+cp .env.example .env # completar DB_HOST, DB_PORT, DB_USER y DB_PASSWORD
+npm run db:setup     # crea la base indicada en DB_NAME (si no existe) y la tabla person
+npm run dev          # http://localhost:8000
 ```
 
-La instancia de MySQL tiene tres bases: `railway` (producción), `redemc_dev` (desarrollo local) y `redemc_test` (tests). Para crear la tabla se ejecuta `database/schema.sql` en la base correspondiente.
+| Script | Descripción |
+|---|---|
+| `npm install` | Dependencias de Node y de Composer |
+| `npm run db:setup` | Crea la base de `DB_NAME` y aplica `database/schema.sql` |
+| `npm run dev` | Servidor de desarrollo en `localhost:8000` |
+| `npm test` | Todos los tests (PHP y JavaScript) |
+
+La instancia de MySQL tiene tres bases: `railway` (producción), `redemc_dev` (desarrollo local) y `redemc_test` (tests; se crea sola al correr los tests).
 
 ## Tests
 
