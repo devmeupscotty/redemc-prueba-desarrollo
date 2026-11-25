@@ -13,7 +13,12 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
-    && printf 'expose_php = Off\n' > "$PHP_INI_DIR/conf.d/security.ini"
+    && printf '%s\n' \
+        'expose_php = Off' \
+        'post_max_size = 16K' \
+        'max_input_vars = 20' \
+        'file_uploads = Off' \
+        > "$PHP_INI_DIR/conf.d/security.ini"
 
 ENV PORT=80
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
@@ -29,6 +34,7 @@ RUN a2enmod headers \
         '</Directory>' \
         'ServerTokens Prod' \
         'ServerSignature Off' \
+        'LimitRequestBody 65536' \
         > /etc/apache2/conf-available/app.conf \
     && a2enconf app
 
