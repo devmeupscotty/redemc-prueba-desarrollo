@@ -57,6 +57,8 @@ final class Constants
     public const VALIDATED_FIELDS = [self::FIELD_NAME, self::FIELD_EMAIL, self::FIELD_PHONE];
     public const REQUIRED_FIELDS = [self::FIELD_NAME, self::FIELD_EMAIL];
     public const UNIQUE_FIELDS = [self::FIELD_EMAIL, self::FIELD_PHONE];
+    public const COLLAPSE_WHITESPACE_FIELDS = [self::FIELD_NAME];
+    public const LOWERCASE_FIELDS = [self::FIELD_EMAIL];
 
     public const PATTERN_FLAGS = 'u';
     public const PATTERNS = [

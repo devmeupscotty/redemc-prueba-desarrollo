@@ -39,23 +39,6 @@ final class PersonValidator
         ), []];
     }
 
-    /**
-     * @param array<string, mixed> $input
-     * @return array<string, ?string>
-     */
-    public function normalize(array $input): array
-    {
-        $name = self::collapseWhitespace(self::text($input, Constants::FIELD_NAME));
-        $email = mb_strtolower(self::text($input, Constants::FIELD_EMAIL));
-        $phone = self::text($input, Constants::FIELD_PHONE);
-
-        return [
-            Constants::FIELD_NAME => $name,
-            Constants::FIELD_EMAIL => $email,
-            Constants::FIELD_PHONE => $phone === '' ? null : $phone,
-        ];
-    }
-
     public static function message(string $field, string $rule): string
     {
         return sprintf(Constants::MESSAGES[$field][$rule], Constants::MAX_LENGTH[$field] ?? 0);
@@ -77,8 +60,31 @@ final class PersonValidator
             'patterns' => Constants::PATTERNS,
             'flags' => Constants::PATTERN_FLAGS,
             'maxLength' => Constants::MAX_LENGTH,
+            'collapseWhitespace' => Constants::COLLAPSE_WHITESPACE_FIELDS,
+            'lowercase' => Constants::LOWERCASE_FIELDS,
             'messages' => $messages,
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $input
+     * @return array<string, ?string>
+     */
+    private function normalize(array $input): array
+    {
+        $data = [];
+        foreach (Constants::VALIDATED_FIELDS as $field) {
+            $value = self::text($input, $field);
+            if (in_array($field, Constants::COLLAPSE_WHITESPACE_FIELDS, true)) {
+                $value = preg_replace(self::WHITESPACE_RUN, ' ', $value) ?? $value;
+            }
+            if (in_array($field, Constants::LOWERCASE_FIELDS, true)) {
+                $value = mb_strtolower($value);
+            }
+            $data[$field] = $value === '' ? null : $value;
+        }
+
+        return $data;
     }
 
     private function failedRule(string $field, ?string $value): ?string
@@ -111,10 +117,5 @@ final class PersonValidator
         }
 
         return $value;
-    }
-
-    private static function collapseWhitespace(string $value): string
-    {
-        return preg_replace(self::WHITESPACE_RUN, ' ', $value) ?? $value;
     }
 }

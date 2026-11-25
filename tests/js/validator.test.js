@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createValidator, normalizeValue, RULES } from '../../public/js/validator.js';
+import { createValidator, RULES } from '../../public/js/validator.js';
 import { loadServerRules, loadValidationCases } from './server-rules.js';
 
 const rules = loadServerRules();
@@ -57,16 +57,22 @@ describe('validate', () => {
     });
 });
 
-describe('normalizeValue', () => {
-    it('trims and collapses spaces in names', () => {
-        expect(normalizeValue('name', '  María \t José ')).toBe('María José');
+describe('normalize', () => {
+    it('collapses inner spaces only in the fields the server says', () => {
+        expect(rules.collapseWhitespace).toEqual(['name']);
+        expect(validator.normalize('name', '  María \t José ')).toBe('María José');
+        expect(validator.normalize('phone', ' 097680102 ')).toBe('097680102');
     });
 
-    it('lowercases emails', () => {
-        expect(normalizeValue('email', ' Ana@Mail.COM ')).toBe('ana@mail.com');
+    it('lowercases only the fields the server says', () => {
+        expect(rules.lowercase).toEqual(['email']);
+        expect(validator.normalize('email', ' Ana@Mail.COM ')).toBe('ana@mail.com');
+        expect(validator.normalize('name', 'Ana')).toBe('Ana');
     });
 
     it('composes decomposed accents', () => {
-        expect(normalizeValue('name', 'José')).toBe('José');
+        const decomposed = 'José';
+
+        expect(validator.normalize('name', decomposed)).toBe('José');
     });
 });

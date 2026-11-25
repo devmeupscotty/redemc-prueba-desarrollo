@@ -5,23 +5,8 @@ export const RULES = Object.freeze({
     duplicate: 'duplicate',
 });
 
-const FIELD_NAME = 'name';
-const FIELD_EMAIL = 'email';
 const UNICODE_FORM = 'NFC';
 const WHITESPACE_RUN = /\s+/gu;
-
-export function normalizeValue(field, value) {
-    let text = typeof value === 'string' ? value.trim().normalize(UNICODE_FORM) : '';
-
-    if (field === FIELD_NAME) {
-        text = text.replace(WHITESPACE_RUN, ' ');
-    }
-    if (field === FIELD_EMAIL) {
-        text = text.toLowerCase();
-    }
-
-    return text;
-}
 
 export function createValidator(rules) {
     const patterns = Object.fromEntries(
@@ -29,6 +14,19 @@ export function createValidator(rules) {
     );
 
     const message = (field, rule) => rules.messages[field][rule];
+
+    function normalize(field, value) {
+        let text = typeof value === 'string' ? value.trim().normalize(UNICODE_FORM) : '';
+
+        if (rules.collapseWhitespace.includes(field)) {
+            text = text.replace(WHITESPACE_RUN, ' ');
+        }
+        if (rules.lowercase.includes(field)) {
+            text = text.toLowerCase();
+        }
+
+        return text;
+    }
 
     function failedRule(field, value) {
         if (value === '') {
@@ -44,7 +42,7 @@ export function createValidator(rules) {
     }
 
     function validateField(field, rawValue) {
-        const rule = failedRule(field, normalizeValue(field, rawValue));
+        const rule = failedRule(field, normalize(field, rawValue));
 
         return rule === null ? null : message(field, rule);
     }
@@ -61,5 +59,5 @@ export function createValidator(rules) {
         return errors;
     }
 
-    return { validateField, validate, message };
+    return { normalize, validateField, validate, message };
 }
