@@ -8,8 +8,10 @@ use Normalizer;
 
 final class PersonValidator
 {
-    private const PATTERN_DELIMITER = '/';
-    private const WHITESPACE_RUN = '/\s+/u';
+    private const PATTERN_DELIMITER = '~';
+    private const DOLLAR_END_ONLY = 'D';
+    private const EDGE_WHITESPACE = '/^[\s\x{FEFF}]+|[\s\x{FEFF}]+$/u';
+    private const WHITESPACE_RUN = '/[\s\x{FEFF}]+/u';
 
     /**
      * @param array<string, mixed> $input
@@ -38,23 +40,6 @@ final class PersonValidator
         ), []];
     }
 
-    /**
-     * @param array<string, mixed> $input
-     * @return array<string, ?string>
-     */
-    public function normalize(array $input): array
-    {
-        $name = self::collapseWhitespace(self::text($input, Constants::FIELD_NAME));
-        $email = mb_strtolower(self::text($input, Constants::FIELD_EMAIL));
-        $phone = self::text($input, Constants::FIELD_PHONE);
-
-        return [
-            Constants::FIELD_NAME => $name,
-            Constants::FIELD_EMAIL => $email,
-            Constants::FIELD_PHONE => $phone === '' ? null : $phone,
-        ];
-    }
-
     public static function message(string $field, string $rule): string
     {
         return sprintf(Constants::MESSAGES[$field][$rule], Constants::MAX_LENGTH[$field] ?? 0);
@@ -76,8 +61,31 @@ final class PersonValidator
             'patterns' => Constants::PATTERNS,
             'flags' => Constants::PATTERN_FLAGS,
             'maxLength' => Constants::MAX_LENGTH,
+            'collapseWhitespace' => Constants::COLLAPSE_WHITESPACE_FIELDS,
+            'lowercase' => Constants::LOWERCASE_FIELDS,
             'messages' => $messages,
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $input
+     * @return array<string, ?string>
+     */
+    private function normalize(array $input): array
+    {
+        $data = [];
+        foreach (Constants::VALIDATED_FIELDS as $field) {
+            $value = self::text($input, $field);
+            if (in_array($field, Constants::COLLAPSE_WHITESPACE_FIELDS, true)) {
+                $value = preg_replace(self::WHITESPACE_RUN, ' ', $value) ?? $value;
+            }
+            if (in_array($field, Constants::LOWERCASE_FIELDS, true)) {
+                $value = mb_strtolower($value);
+            }
+            $data[$field] = $value === '' ? null : $value;
+        }
+
+        return $data;
     }
 
     private function failedRule(string $field, ?string $value): ?string
@@ -91,9 +99,16 @@ final class PersonValidator
             return Constants::RULE_LENGTH;
         }
 
-        $pattern = self::PATTERN_DELIMITER . Constants::PATTERNS[$field] . self::PATTERN_DELIMITER . Constants::PATTERN_FLAGS;
+        return preg_match(self::serverPattern($field), $value) === 1 ? null : Constants::RULE_FORMAT;
+    }
 
-        return preg_match($pattern, $value) === 1 ? null : Constants::RULE_FORMAT;
+    /**
+     * PCRE's "$" also matches before a trailing newline; the D modifier makes it behave like JavaScript's.
+     */
+    private static function serverPattern(string $field): string
+    {
+        return self::PATTERN_DELIMITER . Constants::PATTERNS[$field] . self::PATTERN_DELIMITER
+            . Constants::PATTERN_FLAGS . self::DOLLAR_END_ONLY;
     }
 
     /** @param array<string, mixed> $input */
@@ -104,16 +119,7 @@ final class PersonValidator
             return '';
         }
 
-        $value = trim($value);
-        if (class_exists(Normalizer::class)) {
-            $value = Normalizer::normalize($value, Normalizer::FORM_C) ?: $value;
-        }
-
-        return $value;
-    }
-
-    private static function collapseWhitespace(string $value): string
-    {
-        return preg_replace(self::WHITESPACE_RUN, ' ', $value) ?? $value;
+        $value = preg_replace(self::EDGE_WHITESPACE, '', $value) ?? $value;
+        return Normalizer::normalize($value, Normalizer::FORM_C) ?: $value;
     }
 }

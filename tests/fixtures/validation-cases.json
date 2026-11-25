@@ -1,15 +1,15 @@
 {
     "name": {
-        "valid": ["Ana", "José", "María José", "Ñandú", "Güemes", "ÁÉÍÓÚ áéíóú", "Ana Laura Pérez Núñez", "a", "Ana\tLaura", "  Ana  ", "Ana    Laura", "José"],
+        "valid": ["Ana", "José", "María José", "Ñandú", "Güemes", "ÁÉÍÓÚ áéíóú", "Ana Laura Pérez Núñez", "a", "Ana\tLaura", "  Ana  ", "Ana    Laura", "José", "Ana ", "Ana Laura", "﻿Ana", "Ana Laura "],
         "invalid": ["Ana2", "Ana-María", "O'Neil", "Ana_Laura", "<script>", "Ana.", "Jean@", "😀", "Иван", "Zoë", "Ana, Laura", "123"]
     },
     "email": {
-        "valid": ["ana@mail.com", "ana.laura@mail.com", "ana+tag@mail.com", "ana_l@sub.mail.com.uy", "a%b@x-y.co", "ANA@MAIL.COM", "123@mail.io", "a@b.cd", "  ana@mail.com  ", "first.middle.last@domain.travel"],
+        "valid": ["ana@mail.com", "ana.laura@mail.com", "ana+tag@mail.com", "ana_l@sub.mail.com.uy", "a%b@x-y.co", "ANA@MAIL.COM", "123@mail.io", "a@b.cd", "  ana@mail.com  ", "first.middle.last@domain.travel", " ana@mail.com "],
         "invalid": ["ana", "ana@", "@mail.com", "ana@mail", "ana..b@mail.com", ".ana@mail.com", "ana.@mail.com", "ana@-mail.com", "ana@mail-.com", "ana@mail.c", "ana@mail..com", "ana mail@x.com", "ana@mail.com.", "ana@@mail.com", "añá@mail.com", "ana@mail.123", "<a>@mail.com"]
     },
     "phone": {
-        "valid": ["097680102", "091234567", "099999999", "090000000", " 097680102 "],
+        "valid": ["097680102", "091234567", "099999999", "090000000", " 097680102 ", "097680102 "],
         "invalid": ["97680102", "0976801020", "097 680 102", "097-680-102", "+59897680102", "59897680102", "087680102", "09768010a", "０９７６８０１０２", "0", "09", "(09)7680102"]
     },
-    "empty": ["", " ", "   \t  "]
+    "empty": ["", " ", "   \t  ", "  "]
 }

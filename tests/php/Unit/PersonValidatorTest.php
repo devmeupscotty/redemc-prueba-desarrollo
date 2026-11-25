@@ -206,6 +206,8 @@ final class PersonValidatorTest extends TestCase
         self::assertSame(Constants::PATTERN_FLAGS, $rules['flags']);
         self::assertSame(Constants::REQUIRED_FIELDS, $rules['required']);
         self::assertSame(Constants::MAX_LENGTH, $rules['maxLength']);
+        self::assertSame(Constants::COLLAPSE_WHITESPACE_FIELDS, $rules['collapseWhitespace']);
+        self::assertSame(Constants::LOWERCASE_FIELDS, $rules['lowercase']);
         self::assertStringNotContainsString('%d', json_encode($rules['messages'], JSON_UNESCAPED_UNICODE));
     }
 
