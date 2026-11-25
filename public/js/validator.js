@@ -2,7 +2,6 @@ export const RULES = Object.freeze({
     required: 'required',
     length: 'length',
     format: 'format',
-    duplicate: 'duplicate',
 });
 
 const UNICODE_FORM = 'NFC';
@@ -59,5 +58,5 @@ export function createValidator(rules) {
         return errors;
     }
 
-    return { normalize, validateField, validate, message };
+    return { normalize, validateField, validate };
 }

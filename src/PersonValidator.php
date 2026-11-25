@@ -56,14 +56,14 @@ final class PersonValidator
         }
 
         return [
-            'fields' => Constants::VALIDATED_FIELDS,
-            'required' => Constants::REQUIRED_FIELDS,
-            'patterns' => Constants::PATTERNS,
-            'flags' => Constants::PATTERN_FLAGS,
-            'maxLength' => Constants::MAX_LENGTH,
-            'collapseWhitespace' => Constants::COLLAPSE_WHITESPACE_FIELDS,
-            'lowercase' => Constants::LOWERCASE_FIELDS,
-            'messages' => $messages,
+            Constants::CONFIG_FIELDS => Constants::VALIDATED_FIELDS,
+            Constants::CONFIG_REQUIRED => Constants::REQUIRED_FIELDS,
+            Constants::CONFIG_PATTERNS => Constants::PATTERNS,
+            Constants::CONFIG_FLAGS => Constants::PATTERN_FLAGS,
+            Constants::CONFIG_MAX_LENGTH => Constants::MAX_LENGTH,
+            Constants::CONFIG_COLLAPSE_WHITESPACE => Constants::COLLAPSE_WHITESPACE_FIELDS,
+            Constants::CONFIG_LOWERCASE => Constants::LOWERCASE_FIELDS,
+            Constants::CONFIG_MESSAGES => $messages,
         ];
     }
 

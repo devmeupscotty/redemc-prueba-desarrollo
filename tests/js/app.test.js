@@ -8,6 +8,8 @@ const app = await import('../../public/js/app.js');
 
 const rules = loadServerRules();
 const PAGE_SIZE = 8;
+const UNPROCESSABLE_STATUS = 422;
+const SERVER_ERROR_MESSAGE = 'Error inesperado del servidor.';
 
 const PAGE_MARKUP = `
     <form id="person-form" novalidate>
@@ -28,7 +30,7 @@ const PAGE_MARKUP = `
             <div class="person-cell"><span data-field="name"></span></div>
             <div class="person-cell"><span data-field="email"></span></div>
             <div class="person-cell"><span data-field="phone"></span></div>
-            <div class="person-cell"><span data-field="createdAt"></span></div>
+            <div class="person-cell"><span data-field="createdAt" data-format="date"></span></div>
         </div>
     </template>`;
 
@@ -190,7 +192,15 @@ describe('createForm', () => {
     };
 
     const formWith = (api, onCreated = vi.fn()) => {
-        app.createForm({ $form: $('#person-form'), fields: rules.fields, validator: createValidator(rules), api, onCreated });
+        app.createForm({
+            $form: $('#person-form'),
+            fields: rules.fields,
+            validator: createValidator(rules),
+            api,
+            unprocessableStatus: UNPROCESSABLE_STATUS,
+            serverErrorMessage: SERVER_ERROR_MESSAGE,
+            onCreated,
+        });
 
         return onCreated;
     };
@@ -210,7 +220,7 @@ describe('createForm', () => {
 
     it('shows server errors on the matching fields and keeps every value', () => {
         const errors = { email: rules.messages.email.duplicate };
-        formWith({ create: () => rejected({ status: 422, responseJSON: { errors } }) });
+        formWith({ create: () => rejected({ status: UNPROCESSABLE_STATUS, responseJSON: { errors } }) });
         fill({ name: 'Ana Pérez', email: 'ana@mail.com', phone: '097680102' });
 
         $('#person-form').trigger('submit');

@@ -202,13 +202,13 @@ final class PersonValidatorTest extends TestCase
     {
         $rules = PersonValidator::clientRules();
 
-        self::assertSame(Constants::PATTERNS, $rules['patterns']);
-        self::assertSame(Constants::PATTERN_FLAGS, $rules['flags']);
-        self::assertSame(Constants::REQUIRED_FIELDS, $rules['required']);
-        self::assertSame(Constants::MAX_LENGTH, $rules['maxLength']);
-        self::assertSame(Constants::COLLAPSE_WHITESPACE_FIELDS, $rules['collapseWhitespace']);
-        self::assertSame(Constants::LOWERCASE_FIELDS, $rules['lowercase']);
-        self::assertStringNotContainsString('%d', json_encode($rules['messages'], JSON_UNESCAPED_UNICODE));
+        self::assertSame(Constants::PATTERNS, $rules[Constants::CONFIG_PATTERNS]);
+        self::assertSame(Constants::PATTERN_FLAGS, $rules[Constants::CONFIG_FLAGS]);
+        self::assertSame(Constants::REQUIRED_FIELDS, $rules[Constants::CONFIG_REQUIRED]);
+        self::assertSame(Constants::MAX_LENGTH, $rules[Constants::CONFIG_MAX_LENGTH]);
+        self::assertSame(Constants::COLLAPSE_WHITESPACE_FIELDS, $rules[Constants::CONFIG_COLLAPSE_WHITESPACE]);
+        self::assertSame(Constants::LOWERCASE_FIELDS, $rules[Constants::CONFIG_LOWERCASE]);
+        self::assertStringNotContainsString('%d', json_encode($rules[Constants::CONFIG_MESSAGES], JSON_UNESCAPED_UNICODE));
     }
 
     private function assertNoErrorFor(string $field, string $value): void

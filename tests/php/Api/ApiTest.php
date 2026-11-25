@@ -17,7 +17,6 @@ final class ApiTest extends DatabaseTestCase
     private const STARTUP_TIMEOUT_SECONDS = 10;
     private const REQUEST_TIMEOUT_SECONDS = 30;
     private const PROJECT_ROOT = __DIR__ . '/../../..';
-    private const DB_VARIABLES = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
 
     private const VALID_PERSON = [
         Constants::FIELD_NAME => 'Ana Pérez',
@@ -33,7 +32,7 @@ final class ApiTest extends DatabaseTestCase
         self::pdo();
 
         $environment = getenv();
-        foreach (self::DB_VARIABLES as $variable) {
+        foreach (Constants::ENV_DB_VARIABLES as $variable) {
             $value = getenv($variable);
             if ($value !== false) {
                 $environment[$variable] = $value;
@@ -81,9 +80,11 @@ final class ApiTest extends DatabaseTestCase
         self::assertSame(1, preg_match('#<script type="application/json" id="app-config">(.+?)</script>#s', $response['body'], $match));
 
         $config = json_decode($match[1], true);
-        self::assertSame(Constants::PATTERNS, $config['patterns']);
-        self::assertSame(Constants::ROUTE_PERSONS, $config['endpoint']);
-        self::assertSame(Constants::PAGE_SIZE, $config['pageSize']);
+        self::assertSame(Constants::PATTERNS, $config[Constants::CONFIG_PATTERNS]);
+        self::assertSame(Constants::ROUTE_PERSONS, $config[Constants::CONFIG_ENDPOINT]);
+        self::assertSame(Constants::PAGE_SIZE, $config[Constants::CONFIG_PAGE_SIZE]);
+        self::assertSame(Constants::HTTP_UNPROCESSABLE, $config[Constants::CONFIG_UNPROCESSABLE_STATUS]);
+        self::assertSame(Constants::MESSAGE_SERVER_ERROR, $config[Constants::CONFIG_SERVER_ERROR]);
     }
 
     public function testHomePageOnlyAcceptsGet(): void
@@ -103,7 +104,7 @@ final class ApiTest extends DatabaseTestCase
         self::assertSame('no-store', $response['headers']['cache-control']);
         self::assertSame([], $response['json'][Constants::RESPONSE_DATA]);
         self::assertSame(
-            ['page' => 1, 'perPage' => Constants::PAGE_SIZE, 'total' => 0, 'totalPages' => 1],
+            [Constants::META_PAGE => 1, Constants::META_PER_PAGE => Constants::PAGE_SIZE, Constants::META_TOTAL => 0, Constants::META_TOTAL_PAGES => 1],
             $response['json'][Constants::RESPONSE_META],
         );
     }
@@ -122,7 +123,7 @@ final class ApiTest extends DatabaseTestCase
         self::assertSame('Ana Pérez', $person[Constants::FIELD_NAME]);
         self::assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/', $person[Constants::FIELD_CREATED_AT]);
 
-        self::assertSame($before[Constants::RESPONSE_META]['total'] + 1, $after[Constants::RESPONSE_META]['total']);
+        self::assertSame($before[Constants::RESPONSE_META][Constants::META_TOTAL] + 1, $after[Constants::RESPONSE_META][Constants::META_TOTAL]);
         self::assertCount(count($before[Constants::RESPONSE_DATA]) + 1, $after[Constants::RESPONSE_DATA]);
         self::assertSame($person, $after[Constants::RESPONSE_DATA][0]);
     }
@@ -225,8 +226,8 @@ final class ApiTest extends DatabaseTestCase
 
         self::assertCount(1, $second[Constants::RESPONSE_DATA]);
         self::assertSame('Persona a', $second[Constants::RESPONSE_DATA][0][Constants::FIELD_NAME]);
-        self::assertSame(['page' => 2, 'perPage' => Constants::PAGE_SIZE, 'total' => 9, 'totalPages' => 2], $second[Constants::RESPONSE_META]);
-        self::assertSame(2, $beyond[Constants::RESPONSE_META]['page']);
+        self::assertSame([Constants::META_PAGE => 2, Constants::META_PER_PAGE => Constants::PAGE_SIZE, Constants::META_TOTAL => 9, Constants::META_TOTAL_PAGES => 2], $second[Constants::RESPONSE_META]);
+        self::assertSame(2, $beyond[Constants::RESPONSE_META][Constants::META_PAGE]);
     }
 
     public static function unsupportedMethods(): array
@@ -266,7 +267,7 @@ final class ApiTest extends DatabaseTestCase
 
     private function total(): int
     {
-        return self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS)['json'][Constants::RESPONSE_META]['total'];
+        return self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS)['json'][Constants::RESPONSE_META][Constants::META_TOTAL];
     }
 
     /** @param array<string, string> $fields */
