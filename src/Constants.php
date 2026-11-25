@@ -15,6 +15,7 @@ final class Constants
     public const FIRST_PAGE = 1;
     public const QUERY_PAGE = 'page';
 
+    public const ROUTE_HOME = '/';
     public const ROUTE_PERSONS = '/api/persons';
     public const METHOD_GET = 'GET';
     public const METHOD_POST = 'POST';

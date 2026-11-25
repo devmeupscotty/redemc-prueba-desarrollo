@@ -70,6 +70,28 @@ final class ApiTest extends DatabaseTestCase
         }
     }
 
+    public function testHomePageEmbedsTheServerValidationRules(): void
+    {
+        $response = self::request(Constants::METHOD_GET, Constants::ROUTE_HOME, raw: true);
+
+        self::assertSame(Constants::HTTP_OK, $response['status']);
+        self::assertStringStartsWith('text/html', $response['headers']['content-type']);
+        self::assertSame(1, preg_match('#<script type="application/json" id="app-config">(.+?)</script>#s', $response['body'], $match));
+
+        $config = json_decode($match[1], true);
+        self::assertSame(Constants::PATTERNS, $config['patterns']);
+        self::assertSame(Constants::ROUTE_PERSONS, $config['endpoint']);
+        self::assertSame(Constants::PAGE_SIZE, $config['pageSize']);
+    }
+
+    public function testHomePageOnlyAcceptsGet(): void
+    {
+        $response = self::request(Constants::METHOD_POST, Constants::ROUTE_HOME);
+
+        self::assertSame(Constants::HTTP_METHOD_NOT_ALLOWED, $response['status']);
+        self::assertSame(Constants::METHOD_GET, $response['headers']['allow']);
+    }
+
     public function testListReturnsJsonWithPaginationMeta(): void
     {
         $response = self::request(Constants::METHOD_GET, Constants::ROUTE_PERSONS);
@@ -253,9 +275,9 @@ final class ApiTest extends DatabaseTestCase
 
     /**
      * @param array<string, string> $fields
-     * @return array{status: int, headers: array<string, string>, json: mixed}
+     * @return array{status: int, headers: array<string, string>, json: mixed, body: string}
      */
-    private static function request(string $method, string $path, array $fields = []): array
+    private static function request(string $method, string $path, array $fields = [], bool $raw = false): array
     {
         $context = stream_context_create(['http' => [
             'method' => $method,
@@ -276,7 +298,8 @@ final class ApiTest extends DatabaseTestCase
         return [
             'status' => (int) explode(' ', $statusLine)[1],
             'headers' => $headers,
-            'json' => json_decode((string) $body, true),
+            'json' => $raw ? null : json_decode((string) $body, true),
+            'body' => (string) $body,
         ];
     }
 }
