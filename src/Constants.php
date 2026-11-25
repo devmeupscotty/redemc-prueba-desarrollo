@@ -68,6 +68,8 @@ final class Constants
     public const CONFIG_MESSAGES = 'messages';
     public const CONFIG_ENDPOINT = 'endpoint';
     public const CONFIG_PAGE_SIZE = 'pageSize';
+    public const CONFIG_UNPROCESSABLE_STATUS = 'unprocessableStatus';
+    public const CONFIG_SERVER_ERROR = 'serverError';
 
     public const DUPLICATE_ENTRY_ERROR = 1062;
     public const DUPLICATE_KEYS = [

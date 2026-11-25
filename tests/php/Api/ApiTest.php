@@ -83,6 +83,8 @@ final class ApiTest extends DatabaseTestCase
         self::assertSame(Constants::PATTERNS, $config[Constants::CONFIG_PATTERNS]);
         self::assertSame(Constants::ROUTE_PERSONS, $config[Constants::CONFIG_ENDPOINT]);
         self::assertSame(Constants::PAGE_SIZE, $config[Constants::CONFIG_PAGE_SIZE]);
+        self::assertSame(Constants::HTTP_UNPROCESSABLE, $config[Constants::CONFIG_UNPROCESSABLE_STATUS]);
+        self::assertSame(Constants::MESSAGE_SERVER_ERROR, $config[Constants::CONFIG_SERVER_ERROR]);
     }
 
     public function testHomePageOnlyAcceptsGet(): void

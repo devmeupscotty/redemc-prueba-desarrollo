@@ -2,12 +2,11 @@ import { createValidator } from './validator.js';
 
 const $ = window.jQuery;
 
-const HTTP_UNPROCESSABLE = 422;
 const ABORTED = 'abort';
 const FIRST_PAGE = 1;
 const PAGE_WINDOW_RADIUS = 1;
 const ELLIPSIS = '…';
-const FIELD_CREATED_AT = 'createdAt';
+const DATE_VALUE = 'date';
 const DATE_FORMAT = new Intl.DateTimeFormat('es-UY', {
     dateStyle: 'short',
     timeStyle: 'short',
@@ -25,7 +24,6 @@ const CSS = Object.freeze({
 
 const TEXT = Object.freeze({
     networkError: 'No se pudo conectar con el servidor. Revisá tu conexión e intentá nuevamente.',
-    serverError: 'Ocurrió un error inesperado. Intentá nuevamente en unos instantes.',
     emptyList: 'Todavía no hay registros. Completá el formulario para agregar el primero.',
     listError: 'No se pudo cargar el listado. Intentá nuevamente en unos instantes.',
     previous: 'Anterior',
@@ -73,7 +71,15 @@ export function readValues($form, fields) {
     return Object.fromEntries(fields.map((field) => [field, String($form.find(`[name="${field}"]`).val() ?? '')]));
 }
 
-export function createForm({ $form, fields, validator, api, onCreated = () => {} }) {
+export function createForm({
+    $form,
+    fields,
+    validator,
+    api,
+    unprocessableStatus,
+    serverErrorMessage,
+    onCreated = () => {},
+}) {
     const touched = new Set();
     const $alert = $form.find('#form-alert');
     const $button = $form.find('#submit-button');
@@ -99,11 +105,11 @@ export function createForm({ $form, fields, validator, api, onCreated = () => {}
     }
 
     function handleFailure(xhr) {
-        if (xhr.status === HTTP_UNPROCESSABLE && xhr.responseJSON?.errors) {
+        if (xhr.status === unprocessableStatus && xhr.responseJSON?.errors) {
             applyServerErrors($form, xhr.responseJSON.errors);
             return;
         }
-        showAlert(xhr.status === 0 ? TEXT.networkError : TEXT.serverError);
+        showAlert(xhr.status === 0 ? TEXT.networkError : serverErrorMessage);
     }
 
     $form.on('blur', '.form-control', (event) => {
@@ -137,15 +143,9 @@ export function createForm({ $form, fields, validator, api, onCreated = () => {}
                 reset();
                 onCreated(response.data);
             })
-            .fail((xhr) => {
-                if (xhr.statusText !== ABORTED) {
-                    handleFailure(xhr);
-                }
-            })
+            .fail(handleFailure)
             .always(() => setLoading(false));
     });
-
-    return { reset };
 }
 
 export function formatDate(isoDate) {
@@ -160,9 +160,8 @@ export function renderRows($container, people, template) {
     const rows = people.map((person) => {
         const $row = cloneRow(template);
         $row.find('[data-field]').each((_, element) => {
-            const field = element.dataset.field;
-            const value = field === FIELD_CREATED_AT ? formatDate(person[field]) : person[field];
-            $(element).text(value ?? '');
+            const value = person[element.dataset.field];
+            $(element).text((element.dataset.format === DATE_VALUE ? formatDate(value) : value) ?? '');
         });
 
         return $row;
@@ -293,6 +292,8 @@ function init() {
         fields: config.fields,
         validator: createValidator(config),
         api,
+        unprocessableStatus: config.unprocessableStatus,
+        serverErrorMessage: config.serverError,
         onCreated: () => {
             showToast(document.getElementById('success-toast'));
             list.loadPage(FIRST_PAGE);

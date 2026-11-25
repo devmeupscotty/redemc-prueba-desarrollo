@@ -71,6 +71,8 @@ final class App
         $clientConfig = json_encode(PersonValidator::clientRules() + [
             Constants::CONFIG_ENDPOINT => Constants::ROUTE_PERSONS,
             Constants::CONFIG_PAGE_SIZE => Constants::PAGE_SIZE,
+            Constants::CONFIG_UNPROCESSABLE_STATUS => Constants::HTTP_UNPROCESSABLE,
+            Constants::CONFIG_SERVER_ERROR => Constants::MESSAGE_SERVER_ERROR,
         ], self::INLINE_JSON_FLAGS);
 
         header('Content-Type: text/html; charset=utf-8');

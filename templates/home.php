@@ -3,6 +3,10 @@
 use App\Constants;
 
 /** @var string $clientConfig */
+$name = Constants::FIELD_NAME;
+$email = Constants::FIELD_EMAIL;
+$phone = Constants::FIELD_PHONE;
+$createdAt = Constants::FIELD_CREATED_AT;
 ?>
 <!doctype html>
 <html lang="es">
@@ -34,25 +38,25 @@ use App\Constants;
 
                 <form id="person-form" novalidate>
                     <div class="form-floating field">
-                        <input type="text" class="form-control" id="name" name="name" placeholder="Nombre"
-                               maxlength="<?= Constants::MAX_LENGTH[Constants::FIELD_NAME] ?>" autocomplete="name" required aria-required="true" aria-describedby="name-error">
-                        <label for="name">Nombre <span class="required-mark" aria-hidden="true">*</span></label>
-                        <div class="invalid-feedback" id="name-error"></div>
+                        <input type="text" class="form-control" id="<?= $name ?>" name="<?= $name ?>" placeholder="Nombre"
+                               maxlength="<?= Constants::MAX_LENGTH[$name] ?>" autocomplete="name" required aria-required="true" aria-describedby="<?= $name ?>-error">
+                        <label for="<?= $name ?>">Nombre <span class="required-mark" aria-hidden="true">*</span></label>
+                        <div class="invalid-feedback" id="<?= $name ?>-error"></div>
                     </div>
 
                     <div class="form-floating field">
-                        <input type="email" class="form-control" id="email" name="email" placeholder="Email"
-                               maxlength="<?= Constants::MAX_LENGTH[Constants::FIELD_EMAIL] ?>" autocomplete="email" required aria-required="true" aria-describedby="email-error">
-                        <label for="email">Email <span class="required-mark" aria-hidden="true">*</span></label>
-                        <div class="invalid-feedback" id="email-error"></div>
+                        <input type="email" class="form-control" id="<?= $email ?>" name="<?= $email ?>" placeholder="Email"
+                               maxlength="<?= Constants::MAX_LENGTH[$email] ?>" autocomplete="email" required aria-required="true" aria-describedby="<?= $email ?>-error">
+                        <label for="<?= $email ?>">Email <span class="required-mark" aria-hidden="true">*</span></label>
+                        <div class="invalid-feedback" id="<?= $email ?>-error"></div>
                     </div>
 
                     <div class="form-floating field">
-                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="Teléfono"
-                               inputmode="numeric" autocomplete="tel-national" aria-describedby="phone-hint phone-error">
-                        <label for="phone">Teléfono <span class="optional-mark">(opcional)</span></label>
-                        <div class="form-text" id="phone-hint">Celular uruguayo de 9 dígitos, ej: 097680102</div>
-                        <div class="invalid-feedback" id="phone-error"></div>
+                        <input type="tel" class="form-control" id="<?= $phone ?>" name="<?= $phone ?>" placeholder="Teléfono"
+                               inputmode="numeric" autocomplete="tel-national" aria-describedby="<?= $phone ?>-hint <?= $phone ?>-error">
+                        <label for="<?= $phone ?>">Teléfono <span class="optional-mark">(opcional)</span></label>
+                        <div class="form-text" id="<?= $phone ?>-hint">Celular uruguayo de 9 dígitos, ej: 097680102</div>
+                        <div class="invalid-feedback" id="<?= $phone ?>-error"></div>
                     </div>
 
                     <div class="alert alert-danger form-alert d-none" id="form-alert" role="alert"></div>
@@ -92,10 +96,10 @@ use App\Constants;
 
 <template id="person-row-template">
     <div class="person-row" role="listitem">
-        <div class="person-cell" data-label="Nombre"><span class="person-value" data-field="name"></span></div>
-        <div class="person-cell" data-label="Email"><span class="person-value" data-field="email"></span></div>
-        <div class="person-cell" data-label="Teléfono"><span class="person-value" data-field="phone"></span></div>
-        <div class="person-cell" data-label="Fecha de ingreso"><span class="person-value" data-field="createdAt"></span></div>
+        <div class="person-cell" data-label="Nombre"><span class="person-value" data-field="<?= $name ?>"></span></div>
+        <div class="person-cell" data-label="Email"><span class="person-value" data-field="<?= $email ?>"></span></div>
+        <div class="person-cell" data-label="Teléfono"><span class="person-value" data-field="<?= $phone ?>"></span></div>
+        <div class="person-cell" data-label="Fecha de ingreso"><span class="person-value" data-field="<?= $createdAt ?>" data-format="date"></span></div>
     </div>
 </template>
 
