@@ -4,7 +4,11 @@ import { createValidator } from '../../public/js/validator.js';
 import { loadServerRules } from './server-rules.js';
 
 window.jQuery = $;
-const app = await import('../../public/js/app.js');
+const app = {
+    ...(await import('../../public/js/api.js')),
+    ...(await import('../../public/js/form.js')),
+    ...(await import('../../public/js/list.js')),
+};
 
 const rules = loadServerRules();
 const PAGE_SIZE = 8;
