@@ -15,6 +15,15 @@ final class Constants
     public const FIRST_PAGE = 1;
     public const QUERY_PAGE = 'page';
 
+    public const ROUTE_PERSONS = '/api/persons';
+    public const METHOD_GET = 'GET';
+    public const METHOD_POST = 'POST';
+    public const PERSONS_METHODS = [self::METHOD_GET, self::METHOD_POST];
+
+    public const MESSAGE_NOT_FOUND = 'Recurso no encontrado.';
+    public const MESSAGE_METHOD_NOT_ALLOWED = 'Método no permitido.';
+    public const MESSAGE_SERVER_ERROR = 'Ocurrió un error inesperado. Intentá nuevamente en unos instantes.';
+
     public const HTTP_OK = 200;
     public const HTTP_CREATED = 201;
     public const HTTP_NOT_FOUND = 404;
