@@ -34,8 +34,10 @@ final class Constants
     public const ROUTE_HOME = '/';
     public const ROUTE_PERSONS = '/api/persons';
     public const METHOD_GET = 'GET';
+    public const METHOD_HEAD = 'HEAD';
     public const METHOD_POST = 'POST';
-    public const PERSONS_METHODS = [self::METHOD_GET, self::METHOD_POST];
+    public const HOME_METHODS = [self::METHOD_GET, self::METHOD_HEAD];
+    public const PERSONS_METHODS = [self::METHOD_GET, self::METHOD_HEAD, self::METHOD_POST];
 
     public const MESSAGE_NOT_FOUND = 'Recurso no encontrado.';
     public const MESSAGE_METHOD_NOT_ALLOWED = 'Método no permitido.';

@@ -37,7 +37,7 @@ final class App
     private static function dispatch(string $path, string $method): void
     {
         $allowedMethods = match ($path) {
-            Constants::ROUTE_HOME => [Constants::METHOD_GET],
+            Constants::ROUTE_HOME => Constants::HOME_METHODS,
             Constants::ROUTE_PERSONS => Constants::PERSONS_METHODS,
             default => null,
         };

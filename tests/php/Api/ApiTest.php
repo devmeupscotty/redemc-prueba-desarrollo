@@ -92,7 +92,21 @@ final class ApiTest extends DatabaseTestCase
         $response = self::request(Constants::METHOD_POST, Constants::ROUTE_HOME);
 
         self::assertSame(Constants::HTTP_METHOD_NOT_ALLOWED, $response['status']);
-        self::assertSame(Constants::METHOD_GET, $response['headers']['allow']);
+        self::assertSame(implode(', ', Constants::HOME_METHODS), $response['headers']['allow']);
+    }
+
+    public static function readRoutes(): array
+    {
+        return ['home' => [Constants::ROUTE_HOME], 'persons' => [Constants::ROUTE_PERSONS]];
+    }
+
+    #[DataProvider('readRoutes')]
+    public function testHeadIsAnsweredLikeGetWithoutBody(string $route): void
+    {
+        $response = self::request(Constants::METHOD_HEAD, $route, raw: true);
+
+        self::assertSame(Constants::HTTP_OK, $response['status']);
+        self::assertSame('', $response['body']);
     }
 
     public function testListReturnsJsonWithPaginationMeta(): void
