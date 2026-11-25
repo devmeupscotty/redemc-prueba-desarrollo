@@ -120,10 +120,6 @@ final class PersonValidator
         }
 
         $value = preg_replace(self::EDGE_WHITESPACE, '', $value) ?? $value;
-        if (class_exists(Normalizer::class)) {
-            $value = Normalizer::normalize($value, Normalizer::FORM_C) ?: $value;
-        }
-
-        return $value;
+        return Normalizer::normalize($value, Normalizer::FORM_C) ?: $value;
     }
 }
