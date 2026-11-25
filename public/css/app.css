@@ -51,11 +51,6 @@ body {
     letter-spacing: -0.02em;
 }
 
-.app-subtitle {
-    margin: 0.5rem 0 0;
-    opacity: 0.85;
-}
-
 .app-main {
     margin-top: -4rem;
     padding-bottom: 3rem;

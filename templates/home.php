@@ -22,7 +22,6 @@ use App\Constants;
 <header class="app-header">
     <div class="container">
         <h1 class="app-title">Registro de personas</h1>
-        <p class="app-subtitle">Ingresá tus datos y se agregarán al instante al listado.</p>
     </div>
 </header>
 
