@@ -293,7 +293,10 @@ function init() {
         fields: config.fields,
         validator: createValidator(config),
         api,
-        onCreated: () => showToast(document.getElementById('success-toast')),
+        onCreated: () => {
+            showToast(document.getElementById('success-toast'));
+            list.loadPage(FIRST_PAGE);
+        },
     });
 }
 
