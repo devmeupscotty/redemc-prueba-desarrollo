@@ -8,7 +8,8 @@ use Normalizer;
 
 final class PersonValidator
 {
-    private const PATTERN_DELIMITER = '/';
+    private const PATTERN_DELIMITER = '~';
+    private const DOLLAR_END_ONLY = 'D';
     private const EDGE_WHITESPACE = '/^[\s\x{FEFF}]+|[\s\x{FEFF}]+$/u';
     private const WHITESPACE_RUN = '/[\s\x{FEFF}]+/u';
 
@@ -98,9 +99,16 @@ final class PersonValidator
             return Constants::RULE_LENGTH;
         }
 
-        $pattern = self::PATTERN_DELIMITER . Constants::PATTERNS[$field] . self::PATTERN_DELIMITER . Constants::PATTERN_FLAGS;
+        return preg_match(self::serverPattern($field), $value) === 1 ? null : Constants::RULE_FORMAT;
+    }
 
-        return preg_match($pattern, $value) === 1 ? null : Constants::RULE_FORMAT;
+    /**
+     * PCRE's "$" also matches before a trailing newline; the D modifier makes it behave like JavaScript's.
+     */
+    private static function serverPattern(string $field): string
+    {
+        return self::PATTERN_DELIMITER . Constants::PATTERNS[$field] . self::PATTERN_DELIMITER
+            . Constants::PATTERN_FLAGS . self::DOLLAR_END_ONLY;
     }
 
     /** @param array<string, mixed> $input */
