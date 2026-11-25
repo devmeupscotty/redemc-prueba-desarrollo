@@ -32,7 +32,7 @@ final class PersonControllerTest extends TestCase
 
         self::assertSame(Constants::HTTP_OK, $status);
         self::assertSame([], $body[Constants::RESPONSE_DATA]);
-        self::assertSame(['page' => 1, 'perPage' => Constants::PAGE_SIZE, 'total' => 0, 'totalPages' => 1], $body[Constants::RESPONSE_META]);
+        self::assertSame([Constants::META_PAGE => 1, Constants::META_PER_PAGE => Constants::PAGE_SIZE, Constants::META_TOTAL => 0, Constants::META_TOTAL_PAGES => 1], $body[Constants::RESPONSE_META]);
     }
 
     public function testIndexReturnsRequestedPageWithMeta(): void
@@ -45,7 +45,7 @@ final class PersonControllerTest extends TestCase
         [, $body] = $this->controller($repository)->index([Constants::QUERY_PAGE => '2']);
 
         self::assertSame([$person->toArray()], $body[Constants::RESPONSE_DATA]);
-        self::assertSame(['page' => 2, 'perPage' => Constants::PAGE_SIZE, 'total' => 20, 'totalPages' => 3], $body[Constants::RESPONSE_META]);
+        self::assertSame([Constants::META_PAGE => 2, Constants::META_PER_PAGE => Constants::PAGE_SIZE, Constants::META_TOTAL => 20, Constants::META_TOTAL_PAGES => 3], $body[Constants::RESPONSE_META]);
     }
 
     public function testIndexClampsPagesBeyondTheLast(): void
@@ -56,7 +56,7 @@ final class PersonControllerTest extends TestCase
 
         [, $body] = $this->controller($repository)->index([Constants::QUERY_PAGE => '99']);
 
-        self::assertSame(2, $body[Constants::RESPONSE_META]['page']);
+        self::assertSame(2, $body[Constants::RESPONSE_META][Constants::META_PAGE]);
     }
 
     public static function invalidPages(): array
@@ -73,7 +73,7 @@ final class PersonControllerTest extends TestCase
 
         [, $body] = $this->controller($repository)->index([Constants::QUERY_PAGE => $page]);
 
-        self::assertSame(1, $body[Constants::RESPONSE_META]['page']);
+        self::assertSame(1, $body[Constants::RESPONSE_META][Constants::META_PAGE]);
     }
 
     public function testStoreCreatesNormalizedPerson(): void

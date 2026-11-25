@@ -16,18 +16,18 @@ final class Database
     {
         self::loadEnvFile();
 
-        $databaseName ??= self::env('DB_NAME');
+        $databaseName ??= self::env(Constants::ENV_DB_NAME);
         $dsn = sprintf(
             'mysql:host=%s;port=%s;charset=%s',
-            self::env('DB_HOST'),
-            self::env('DB_PORT', Constants::DB_DEFAULT_PORT),
+            self::env(Constants::ENV_DB_HOST),
+            self::env(Constants::ENV_DB_PORT, Constants::DB_DEFAULT_PORT),
             Constants::DB_CHARSET,
         );
         if ($databaseName !== '') {
             $dsn .= ';dbname=' . $databaseName;
         }
 
-        $pdo = new PDO($dsn, self::env('DB_USER'), self::env('DB_PASSWORD', ''), [
+        $pdo = new PDO($dsn, self::env(Constants::ENV_DB_USER), self::env(Constants::ENV_DB_PASSWORD, ''), [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,

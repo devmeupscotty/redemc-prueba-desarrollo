@@ -28,10 +28,10 @@ final class PersonController
         return [Constants::HTTP_OK, [
             Constants::RESPONSE_DATA => array_map(static fn (Person $person) => $person->toArray(), $people),
             Constants::RESPONSE_META => [
-                'page' => $page,
-                'perPage' => Constants::PAGE_SIZE,
-                'total' => $total,
-                'totalPages' => $totalPages,
+                Constants::META_PAGE => $page,
+                Constants::META_PER_PAGE => Constants::PAGE_SIZE,
+                Constants::META_TOTAL => $total,
+                Constants::META_TOTAL_PAGES => $totalPages,
             ],
         ]];
     }

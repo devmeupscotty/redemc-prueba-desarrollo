@@ -7,6 +7,20 @@ namespace App;
 final class Constants
 {
     public const ENV_FILE = '.env';
+    public const ENV_DB_HOST = 'DB_HOST';
+    public const ENV_DB_PORT = 'DB_PORT';
+    public const ENV_DB_NAME = 'DB_NAME';
+    public const ENV_DB_USER = 'DB_USER';
+    public const ENV_DB_PASSWORD = 'DB_PASSWORD';
+    public const ENV_DB_TEST_NAME = 'DB_TEST_NAME';
+    public const ENV_DB_VARIABLES = [
+        self::ENV_DB_HOST,
+        self::ENV_DB_PORT,
+        self::ENV_DB_NAME,
+        self::ENV_DB_USER,
+        self::ENV_DB_PASSWORD,
+    ];
+
     public const DB_CHARSET = 'utf8mb4';
     public const DB_COLLATION = 'utf8mb4_unicode_ci';
     public const DATABASE_NAME_PATTERN = '/^[A-Za-z0-9_]+$/';
@@ -38,6 +52,22 @@ final class Constants
     public const RESPONSE_META = 'meta';
     public const RESPONSE_ERRORS = 'errors';
     public const RESPONSE_MESSAGE = 'message';
+
+    public const META_PAGE = 'page';
+    public const META_PER_PAGE = 'perPage';
+    public const META_TOTAL = 'total';
+    public const META_TOTAL_PAGES = 'totalPages';
+
+    public const CONFIG_FIELDS = 'fields';
+    public const CONFIG_REQUIRED = 'required';
+    public const CONFIG_PATTERNS = 'patterns';
+    public const CONFIG_FLAGS = 'flags';
+    public const CONFIG_MAX_LENGTH = 'maxLength';
+    public const CONFIG_COLLAPSE_WHITESPACE = 'collapseWhitespace';
+    public const CONFIG_LOWERCASE = 'lowercase';
+    public const CONFIG_MESSAGES = 'messages';
+    public const CONFIG_ENDPOINT = 'endpoint';
+    public const CONFIG_PAGE_SIZE = 'pageSize';
 
     public const DUPLICATE_ENTRY_ERROR = 1062;
     public const DUPLICATE_KEYS = [

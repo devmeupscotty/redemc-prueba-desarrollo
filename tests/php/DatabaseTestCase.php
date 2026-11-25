@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Constants;
 use App\Database;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +16,7 @@ abstract class DatabaseTestCase extends TestCase
     protected static function pdo(): PDO
     {
         if (self::$pdo === null) {
-            Database::createDatabase(Database::env('DB_NAME'));
+            Database::createDatabase(Database::env(Constants::ENV_DB_NAME));
             self::$pdo = Database::connect();
             Database::applySchema(self::$pdo);
         }

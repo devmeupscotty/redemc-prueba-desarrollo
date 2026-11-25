@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Constants;
 use App\Database;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 Database::loadEnvFile();
-$databaseName = Database::env('DB_NAME');
+$databaseName = Database::env(Constants::ENV_DB_NAME);
 
 try {
     Database::createDatabase($databaseName);

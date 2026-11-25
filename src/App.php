@@ -69,8 +69,8 @@ final class App
     private static function renderHome(): void
     {
         $clientConfig = json_encode(PersonValidator::clientRules() + [
-            'endpoint' => Constants::ROUTE_PERSONS,
-            'pageSize' => Constants::PAGE_SIZE,
+            Constants::CONFIG_ENDPOINT => Constants::ROUTE_PERSONS,
+            Constants::CONFIG_PAGE_SIZE => Constants::PAGE_SIZE,
         ], self::INLINE_JSON_FLAGS);
 
         header('Content-Type: text/html; charset=utf-8');
