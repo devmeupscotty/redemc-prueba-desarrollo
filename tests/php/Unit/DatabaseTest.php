@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\Database;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -78,6 +79,13 @@ final class DatabaseTest extends TestCase
 
         self::assertSame('from-railway', getenv(self::KEY));
         self::assertSame('from-file', getenv(self::OTHER_KEY));
+    }
+
+    public function testCreateDatabaseRejectsUnsafeNamesBeforeConnecting(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Database::createDatabase('railway`; DROP DATABASE railway; --');
     }
 
     public function testMissingEnvFileIsIgnored(): void
