@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App;
 
+use InvalidArgumentException;
 use PDO;
 use RuntimeException;
 
 final class Database
 {
+    private const SCHEMA_FILE = __DIR__ . '/../database/schema.sql';
+
     public static function connect(?string $databaseName = null): PDO
     {
         self::loadEnvFile();
@@ -24,7 +27,7 @@ final class Database
             $dsn .= ';dbname=' . $databaseName;
         }
 
-        $pdo = new PDO($dsn, self::env('DB_USER'), self::env('DB_PASSWORD'), [
+        $pdo = new PDO($dsn, self::env('DB_USER'), self::env('DB_PASSWORD', ''), [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES => false,
@@ -32,6 +35,25 @@ final class Database
         $pdo->exec(sprintf("SET time_zone = '%s'", Constants::DB_TIME_ZONE));
 
         return $pdo;
+    }
+
+    public static function createDatabase(string $name): void
+    {
+        if (preg_match(Constants::DATABASE_NAME_PATTERN, $name) !== 1) {
+            throw new InvalidArgumentException("Invalid database name: {$name}");
+        }
+
+        self::connect('')->exec(sprintf(
+            'CREATE DATABASE IF NOT EXISTS `%s` CHARACTER SET %s COLLATE %s',
+            $name,
+            Constants::DB_CHARSET,
+            Constants::DB_COLLATION,
+        ));
+    }
+
+    public static function applySchema(PDO $pdo): void
+    {
+        $pdo->exec(file_get_contents(self::SCHEMA_FILE));
     }
 
     public static function env(string $key, ?string $default = null): string

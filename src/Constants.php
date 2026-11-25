@@ -8,6 +8,8 @@ final class Constants
 {
     public const ENV_FILE = '.env';
     public const DB_CHARSET = 'utf8mb4';
+    public const DB_COLLATION = 'utf8mb4_unicode_ci';
+    public const DATABASE_NAME_PATTERN = '/^[A-Za-z0-9_]+$/';
     public const DB_DEFAULT_PORT = '3306';
     public const DB_TIME_ZONE = '+00:00';
 
