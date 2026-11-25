@@ -11,6 +11,8 @@ final class Constants
     public const DB_DEFAULT_PORT = '3306';
     public const DB_TIME_ZONE = '+00:00';
 
+    public const PAGE_SIZE = 8;
+
     public const FIELD_ID = 'id';
     public const FIELD_NAME = 'name';
     public const FIELD_EMAIL = 'email';
