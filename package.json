@@ -8,7 +8,7 @@
     "dev": "php -S localhost:8000 -t public public/index.php",
     "test": "npm run test:php && npm run test:js",
     "test:php": "php vendor/bin/phpunit",
-    "test:js": "vitest run --environment jsdom --passWithNoTests"
+    "test:js": "vitest run --environment jsdom"
   },
   "devDependencies": {
     "jquery": "^4.1.0",

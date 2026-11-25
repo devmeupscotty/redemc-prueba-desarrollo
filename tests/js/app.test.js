@@ -278,6 +278,17 @@ describe('createForm', () => {
         expect($('#name').val()).toBe('Ana');
     });
 
+    it('shows the server error message on unexpected failures', () => {
+        formWith({ create: () => rejected({ status: 500 }) });
+        fill({ name: 'Ana', email: 'ana@mail.com' });
+
+        $('#person-form').trigger('submit');
+
+        expect($('#form-alert').text()).toBe(SERVER_ERROR_MESSAGE);
+        expect($('#form-alert').hasClass('d-none')).toBe(false);
+        expect($('#email').val()).toBe('ana@mail.com');
+    });
+
     it('validates live once a field has been touched', () => {
         formWith({ create: vi.fn() });
         const $email = $('#email');

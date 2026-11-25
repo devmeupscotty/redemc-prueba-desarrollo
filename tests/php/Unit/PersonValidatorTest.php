@@ -12,6 +12,8 @@ use PHPUnit\Framework\TestCase;
 
 final class PersonValidatorTest extends TestCase
 {
+    private const CASES_FILE = __DIR__ . '/../../fixtures/validation-cases.json';
+
     private const VALID_INPUT = [
         Constants::FIELD_NAME => 'Ana Pérez',
         Constants::FIELD_EMAIL => 'ana@mail.com',
@@ -24,8 +26,6 @@ final class PersonValidatorTest extends TestCase
     {
         $this->validator = new PersonValidator();
     }
-
-    private const CASES_FILE = __DIR__ . '/../../fixtures/validation-cases.json';
 
     public static function validNames(): array
     {
@@ -114,7 +114,7 @@ final class PersonValidatorTest extends TestCase
         self::assertNull($person->phone);
     }
 
-    public function testRejectsValuesOverMaxLength(): void
+    public function testEnforcesMaxLengthCountingCharacters(): void
     {
         $tooLongEmail = str_repeat('a', 64) . '@' . str_repeat('b', 60) . '.' . str_repeat('c', 60) . '.' . str_repeat('d', 70) . '.com';
 
