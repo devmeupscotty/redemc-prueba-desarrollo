@@ -69,13 +69,9 @@ final class PersonController
     /** @return array<string, string> */
     private function duplicateErrors(Person $person): array
     {
-        $values = $person->toArray();
         $errors = [];
-
-        foreach (Constants::UNIQUE_FIELDS as $field) {
-            if ($values[$field] !== null && $this->repository->existsBy($field, $values[$field])) {
-                $errors[$field] = PersonValidator::message($field, Constants::RULE['DUPLICATE']);
-            }
+        foreach ($this->repository->duplicatedFields($person) as $field) {
+            $errors[$field] = PersonValidator::message($field, Constants::RULE['DUPLICATE']);
         }
 
         return $errors;

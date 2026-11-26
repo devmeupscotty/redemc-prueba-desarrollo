@@ -80,7 +80,7 @@ final class PersonControllerTest extends TestCase
     {
         $created = new Person('Ana Pérez', 'ana@mail.com', '097680102', 1, new DateTimeImmutable('2026-11-25 12:00:00+00:00'));
         $repository = $this->createMock(PersonRepository::class);
-        $repository->method('existsBy')->willReturn(false);
+        $repository->method('duplicatedFields')->willReturn([]);
         $repository->expects(self::once())->method('create')
             ->with(new Person('Ana Pérez', 'ana@mail.com', '097680102'))
             ->willReturn($created);
@@ -94,7 +94,7 @@ final class PersonControllerTest extends TestCase
     public function testStoreRejectsInvalidInputWithoutTouchingTheDatabase(): void
     {
         $repository = $this->createMock(PersonRepository::class);
-        $repository->expects(self::never())->method('existsBy');
+        $repository->expects(self::never())->method('duplicatedFields');
         $repository->expects(self::never())->method('create');
 
         [$status, $body] = $this->controller($repository)->store([Constants::FIELD['NAME'] => '   ', Constants::FIELD['EMAIL'] => '']);
@@ -120,9 +120,7 @@ final class PersonControllerTest extends TestCase
     public function testStoreRejectsDuplicatesFoundBeforeInserting(array $duplicatedFields): void
     {
         $repository = $this->createMock(PersonRepository::class);
-        $repository->method('existsBy')->willReturnCallback(
-            static fn (string $field) => in_array($field, $duplicatedFields, true)
-        );
+        $repository->method('duplicatedFields')->willReturn($duplicatedFields);
         $repository->expects(self::never())->method('create');
 
         [$status, $body] = $this->controller($repository)->store(self::VALID_BODY);
@@ -135,10 +133,12 @@ final class PersonControllerTest extends TestCase
         self::assertSame($expected, $body[Constants::RESPONSE['ERRORS']]);
     }
 
-    public function testStoreLooksUpEmailCaseInsensitively(): void
+    public function testStoreChecksDuplicatesOnceWithTheNormalizedPerson(): void
     {
         $repository = $this->createMock(PersonRepository::class);
-        $repository->expects(self::once())->method('existsBy')->with(Constants::FIELD['EMAIL'], 'ana@mail.com')->willReturn(false);
+        $repository->expects(self::once())->method('duplicatedFields')
+            ->with(new Person('Ana Pérez', 'ana@mail.com', null))
+            ->willReturn([]);
         $repository->method('create')->willReturn(new Person('Ana', 'ana@mail.com', null, 1));
 
         $this->controller($repository)->store([Constants::FIELD['PHONE'] => ''] + self::VALID_BODY);
@@ -148,7 +148,7 @@ final class PersonControllerTest extends TestCase
     {
         $race = new PDOException('Duplicate entry');
         $repository = $this->createMock(PersonRepository::class);
-        $repository->method('existsBy')->willReturn(false);
+        $repository->method('duplicatedFields')->willReturn([]);
         $repository->method('create')->willThrowException($race);
         $repository->expects(self::once())->method('duplicateFieldFrom')->with($race)->willReturn(Constants::FIELD['EMAIL']);
 
@@ -165,7 +165,7 @@ final class PersonControllerTest extends TestCase
     {
         $failure = new PDOException('Connection lost');
         $repository = $this->createStub(PersonRepository::class);
-        $repository->method('existsBy')->willReturn(false);
+        $repository->method('duplicatedFields')->willReturn([]);
         $repository->method('create')->willThrowException($failure);
         $repository->method('duplicateFieldFrom')->willReturn(null);
 

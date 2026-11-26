@@ -9,7 +9,6 @@ use App\Person;
 use App\PersonRepository;
 use DateTimeImmutable;
 use DateTimeZone;
-use InvalidArgumentException;
 use PDOException;
 use Tests\DatabaseTestCase;
 
@@ -90,28 +89,39 @@ final class PersonRepositoryTest extends DatabaseTestCase
         self::assertSame([], $this->repository->findPage(Constants::PAGINATION['PAGE_SIZE'], Constants::PAGINATION['PAGE_SIZE']));
     }
 
-    public function testExistsByFindsEmailsIgnoringCase(): void
+    public function testDuplicatedFieldsFindsEmailsIgnoringCase(): void
     {
         $this->repository->create(new Person('Ana', 'ana@mail.com'));
 
-        self::assertTrue($this->repository->existsBy(Constants::FIELD['EMAIL'], 'ana@mail.com'));
-        self::assertTrue($this->repository->existsBy(Constants::FIELD['EMAIL'], 'ANA@Mail.COM'));
-        self::assertFalse($this->repository->existsBy(Constants::FIELD['EMAIL'], 'otra@mail.com'));
+        self::assertSame([Constants::FIELD['EMAIL']], $this->repository->duplicatedFields(new Person('Otra', 'ana@mail.com')));
+        self::assertSame([Constants::FIELD['EMAIL']], $this->repository->duplicatedFields(new Person('Otra', 'ANA@Mail.COM')));
+        self::assertSame([], $this->repository->duplicatedFields(new Person('Otra', 'otra@mail.com')));
     }
 
-    public function testExistsByFindsPhones(): void
+    public function testDuplicatedFieldsFindsPhones(): void
     {
         $this->repository->create(new Person('Ana', 'ana@mail.com', '097680102'));
 
-        self::assertTrue($this->repository->existsBy(Constants::FIELD['PHONE'], '097680102'));
-        self::assertFalse($this->repository->existsBy(Constants::FIELD['PHONE'], '091111111'));
+        self::assertSame([Constants::FIELD['PHONE']], $this->repository->duplicatedFields(new Person('Luis', 'luis@mail.com', '097680102')));
+        self::assertSame([], $this->repository->duplicatedFields(new Person('Luis', 'luis@mail.com', '091111111')));
     }
 
-    public function testExistsByRejectsNonUniqueFields(): void
+    public function testDuplicatedFieldsReportsBothEvenFromDifferentPeople(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->repository->create(new Person('Ana', 'ana@mail.com', '091111111'));
+        $this->repository->create(new Person('Luis', 'luis@mail.com', '097680102'));
 
-        $this->repository->existsBy(Constants::FIELD['NAME'], 'Ana');
+        self::assertSame(
+            [Constants::FIELD['EMAIL'], Constants::FIELD['PHONE']],
+            $this->repository->duplicatedFields(new Person('Otra', 'ana@mail.com', '097680102')),
+        );
+    }
+
+    public function testMissingPhonesNeverCountAsDuplicates(): void
+    {
+        $this->repository->create(new Person('Ana', 'ana@mail.com'));
+
+        self::assertSame([], $this->repository->duplicatedFields(new Person('Luis', 'luis@mail.com')));
     }
 
     public function testAllowsManyPeopleWithoutPhone(): void
