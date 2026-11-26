@@ -48,6 +48,8 @@ tests/             PHPUnit (unit, integration, api) y Vitest
 - **Unicidad garantizada por la base.** Índices `UNIQUE` en `email` y `phone`. El email se guarda en minúsculas y el teléfono vacío como `NULL` (MySQL admite múltiples `NULL` en un índice único). El controlador verifica duplicados antes de insertar para dar un mensaje claro, y si dos envíos simultáneos chocan, el error de clave duplicada de MySQL se traduce al mismo mensaje.
 - **Paginado en el servidor** con `LIMIT/OFFSET` tipados y orden por `id DESC`; el listado no carga toda la tabla.
 - **Fechas en UTC** en la base; el navegador las muestra en hora de Uruguay.
+- **Pocas idas y vueltas a la base.** Un alta verifica email y teléfono duplicados en una sola consulta antes del `INSERT`.
+- **Frontend liviano.** Se carga `bootstrap.min.js` sin Popper (solo se usa el Toast) y los módulos JS se precargan en paralelo con `modulepreload`. CSS y JS se sirven con `Cache-Control: no-cache`: el navegador los conserva pero los revalida, así un deploy nuevo nunca queda oculto detrás de una versión cacheada.
 
 ## Seguridad
 
@@ -121,4 +123,4 @@ La aplicación corre en un contenedor (`Dockerfile`: PHP 8.3 + Apache) y la base
 
 ### Flujo de trabajo
 
-`main` (producción) ← `develop` ← ramas `feature/*` y `fix/*`, integradas con merges `--no-ff`.
+`main` (producción) ← `develop` ← ramas `feature/*`, `fix/*` y `refactor/*`, integradas con merges `--no-ff`.
