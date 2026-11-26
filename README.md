@@ -4,6 +4,13 @@ Formulario de registro de personas (nombre, email y teléfono) con validación e
 
 **Stack:** HTML, CSS, Bootstrap 5.3, JavaScript (ES modules) + jQuery 4, PHP 8.3 y MySQL 8.4.
 
+| | |
+|---|---|
+| **Aplicación publicada** | https://redemc-prueba-desarrollo-production-4c937f39.up.railway.app |
+| **Repositorio** | https://github.com/devmeupscotty/redemc-prueba-desarrollo |
+| **Estructura de la tabla** | [`database/schema.sql`](database/schema.sql) |
+| **Uso de IA** | [`PROCESO_IA.md`](PROCESO_IA.md) |
+
 ## Funcionalidades
 
 - **Formulario** con Nombre\*, Email\* y Teléfono (opcional), con estilos propios en los inputs y estados válido/inválido.
@@ -112,24 +119,35 @@ Los casos de validación están en `tests/fixtures/validation-cases.json` y los 
 
 ## Deploy en Railway
 
-La aplicación corre en un contenedor (`Dockerfile`: PHP 8.3 + Apache) y la base es un servicio MySQL del mismo proyecto.
+El proyecto de Railway tiene dos servicios: **MySQL** (la base) y la **aplicación**, que se construye con el `Dockerfile` del repositorio (PHP 8.3 + Apache). La app y la base se comunican por la red privada de Railway.
 
-1. **Crear el proyecto y la base:** en Railway, *New Project → Database → MySQL*.
-2. **Crear el servicio de la app:** en el mismo proyecto, *New → GitHub Repo* y elegir este repositorio. En *Settings* se configura la rama **`main`**; Railway detecta el `Dockerfile` y lo usa para construir.
-3. **Variables del servicio de la app** (referencias al servicio MySQL, conexión por red privada):
+### 1. Base de datos
+1. En Railway: *New Project → Database → MySQL*. Railway crea la base `railway` y publica sus credenciales como variables del servicio (`MYSQLHOST`, `MYSQLPORT`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`).
+2. Para administrarla desde la PC, en el servicio MySQL se habilita *Settings → Networking → Public Access* (un proxy TCP con host y puerto públicos, protegido por la contraseña) y se aplican los cambios con *Deploy*.
+3. Se crea la tabla ejecutando [`database/schema.sql`](database/schema.sql) sobre la base `railway`. Desde este repositorio alcanza con apuntar el `.env` al host y puerto públicos, con `DB_NAME=railway`, y correr:
+   ```bash
+   npm run db:setup
+   ```
+   El script es idempotente: crea la base y la tabla solo si no existen. También puede ejecutarse el `.sql` con un cliente como DBeaver.
 
-   | Variable | Valor |
-   |---|---|
-   | `DB_HOST` | `${{MySQL.MYSQLHOST}}` |
-   | `DB_PORT` | `${{MySQL.MYSQLPORT}}` |
-   | `DB_NAME` | `${{MySQL.MYSQLDATABASE}}` |
-   | `DB_USER` | `${{MySQL.MYSQLUSER}}` |
-   | `DB_PASSWORD` | `${{MySQL.MYSQLPASSWORD}}` |
+### 2. Aplicación
+1. **Conectar GitHub:** se instala la [GitHub App de Railway](https://github.com/apps/railway-app/installations/new) en la cuenta y se le da acceso a este repositorio. Sin ese paso, iniciar sesión con GitHub no alcanza: Railway no puede leer las ramas ni clonar el código.
+2. **Crear el servicio:** en el mismo proyecto, *New → GitHub Repo* y se elige este repositorio. Railway toma la rama **`main`** (la predeterminada) y detecta el `Dockerfile` para construir la imagen.
+3. **Variables del servicio** (*Variables → Raw Editor*). Son referencias a las del servicio MySQL, así que se actualizan solas si cambia la contraseña:
+   ```
+   DB_HOST=${{MySQL.MYSQLHOST}}
+   DB_PORT=${{MySQL.MYSQLPORT}}
+   DB_NAME=${{MySQL.MYSQLDATABASE}}
+   DB_USER=${{MySQL.MYSQLUSER}}
+   DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+   ```
+   `MYSQLHOST` es la dirección privada (`mysql.railway.internal`), no la pública. La variable `PORT` la define Railway: el `Dockerfile` configura Apache con `Listen ${PORT}`, por lo que no hace falta declararla.
+4. **Dominio público:** *Settings → Networking → Generate Domain*.
+5. Se aplican los cambios con *Deploy*. El build instala las dependencias de Composer sin las de desarrollo, agrega las extensiones `pdo_mysql` e `intl`, usa el `php.ini` de producción y deja como DocumentRoot solo la carpeta `public/`.
 
-4. **Dominio público:** en *Settings → Networking → Generate Domain*.
-5. **Crear la tabla:** ejecutar `database/schema.sql` sobre la base `railway`. Para hacerlo desde la PC, se habilita *Public Access* en el servicio MySQL y se conecta un cliente (por ejemplo DBeaver) con el host y puerto públicos.
-6. Cada push a `main` dispara un nuevo deploy.
+### 3. Verificación
+Desde el link público se comprobó el recorrido completo: cargar una persona, que se guarde y aparezca primera en el listado sin recargar, que siga ahí después de refrescar la página y que figure en la tabla `person` de la base `railway`. También se verificó que las validaciones devuelvan `422` con su mensaje, que Apache envíe los headers de seguridad y que `/src`, `/.env`, `/composer.json` y `/vendor` respondan `404`.
 
 ### Flujo de trabajo
 
-`main` (producción) ← `develop` ← ramas `feature/*`, `fix/*` y `refactor/*`, integradas con merges `--no-ff`.
+`main` (producción) ← `develop` ← ramas `feature/*`, `fix/*`, `refactor/*` y `docs/*`, integradas con merges `--no-ff`.
