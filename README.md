@@ -148,9 +148,6 @@ El proyecto de Railway tiene dos servicios: **MySQL** (la base) y la **aplicaci�
 ### 3. Verificación
 Desde el link público se comprobó el recorrido completo: cargar una persona, que se guarde y aparezca primera en el listado sin recargar, que siga ahí después de refrescar la página y que figure en la tabla `person` de la base `railway`. También se verificó que las validaciones devuelvan `422` con su mensaje, que Apache envíe los headers de seguridad y que `/src`, `/.env`, `/composer.json` y `/vendor` respondan `404`.
 
-### 4. Actualizaciones
-Railway solo vigila la rama `main`: cada push a `main` construye y publica una nueva versión, y la anterior sigue respondiendo hasta que la nueva está lista. Las ramas `develop`, `feature/*`, `fix/*`, `refactor/*` y `docs/*` no disparan deploys. Los cambios en archivos Markdown no llegan a la imagen (están excluidos en `.dockerignore`).
-
 ### Flujo de trabajo
 
 `main` (producción) ← `develop` ← ramas `feature/*`, `fix/*`, `refactor/*` y `docs/*`, integradas con merges `--no-ff`.
