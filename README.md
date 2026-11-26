@@ -4,6 +4,13 @@ Formulario de registro de personas (nombre, email y teléfono) con validación e
 
 **Stack:** HTML, CSS, Bootstrap 5.3, JavaScript (ES modules) + jQuery 4, PHP 8.3 y MySQL 8.4.
 
+| | |
+|---|---|
+| **Aplicación publicada** | https://redemc-prueba-desarrollo-production-4c937f39.up.railway.app |
+| **Repositorio** | https://github.com/devmeupscotty/redemc-prueba-desarrollo |
+| **Estructura de la tabla** | [`database/schema.sql`](database/schema.sql) |
+| **Uso de IA** | [`PROCESO_IA.md`](PROCESO_IA.md) |
+
 ## Funcionalidades
 
 - **Formulario** con Nombre\*, Email\* y Teléfono (opcional), con estilos propios en los inputs y estados válido/inválido.
