@@ -48,6 +48,8 @@ tests/             PHPUnit (unit, integration, api) y Vitest
 - **Unicidad garantizada por la base.** Índices `UNIQUE` en `email` y `phone`. El email se guarda en minúsculas y el teléfono vacío como `NULL` (MySQL admite múltiples `NULL` en un índice único). El controlador verifica duplicados antes de insertar para dar un mensaje claro, y si dos envíos simultáneos chocan, el error de clave duplicada de MySQL se traduce al mismo mensaje.
 - **Paginado en el servidor** con `LIMIT/OFFSET` tipados y orden por `id DESC`; el listado no carga toda la tabla.
 - **Fechas en UTC** en la base; el navegador las muestra en hora de Uruguay.
+- **Pocas idas y vueltas a la base.** Un alta verifica email y teléfono duplicados en una sola consulta antes del `INSERT`.
+- **Frontend liviano.** Se carga `bootstrap.min.js` sin Popper (solo se usa el Toast) y los módulos JS se precargan en paralelo con `modulepreload`. CSS y JS se sirven con `Cache-Control: no-cache`: el navegador los conserva pero los revalida, así un deploy nuevo nunca queda oculto detrás de una versión cacheada.
 
 ## Seguridad
 
@@ -61,6 +63,15 @@ tests/             PHPUnit (unit, integration, api) y Vitest
 - Headers: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Strict-Transport-Security`.
 
 **¿Y CSRF?** La aplicación no tiene sesiones, cookies ni usuarios autenticados, así que no hay una credencial que un sitio externo pueda aprovechar; un token CSRF no protegería nada. El riesgo real es que otra página haga que el navegador de sus visitantes envíe el formulario (spam). Para eso el servidor rechaza con `403` los `POST` que el navegador marca como `Sec-Fetch-Site: cross-site`.
+
+## Límites conocidos y mejoras posibles
+
+Decisiones tomadas a conciencia para el alcance de la prueba, y cómo evolucionarían:
+
+- **Paginado con `OFFSET`.** Cada página hace un `COUNT(*)` y un `LIMIT/OFFSET`, lo que funciona bien hasta cientos de miles de registros. Con millones, MySQL tiene que recorrer las filas que saltea. La alternativa escalable es paginar por cursor (`WHERE id < :ultimo_id ORDER BY id DESC LIMIT 8`), que cuesta lo mismo en cualquier página pero reemplaza los números de página por "anterior/siguiente".
+- **Sin límite de envíos por cliente (rate limiting).** El formulario es público: un script (no un navegador, que ya queda frenado por el chequeo de `Sec-Fetch-Site`) podría cargar muchos registros. Resolverlo bien requiere guardar contadores por IP (una tabla en MySQL, APCu o Redis) o delegarlo en un proxy o WAF delante de la app. Para una prueba técnica sin usuarios reales se dejó fuera.
+- **Usuario de base con privilegios mínimos.** La app se conecta con las credenciales que Railway genera para el servicio MySQL (`root`). En un entorno real se crearía un usuario exclusivo con solo `SELECT` e `INSERT` sobre la tabla `person`, de modo que una vulnerabilidad en la app no pudiera borrar datos ni leer otras bases. Además, el acceso público de MySQL (*Public Access*), que solo se necesita para administrar la base desde la PC, se desactivaría al terminar.
+- **Fuente tipográfica externa.** Inter se carga desde Google Fonts, lo que suma dos dominios externos y una hoja de estilos que bloquea el primer render. Una pila de fuentes del sistema (`system-ui, -apple-system, "Segoe UI", Roboto, …`) eliminaría esas peticiones y simplificaría la CSP, a cambio de un aspecto algo distinto en cada sistema operativo.
 
 ## Desarrollo local
 
@@ -121,4 +132,4 @@ La aplicación corre en un contenedor (`Dockerfile`: PHP 8.3 + Apache) y la base
 
 ### Flujo de trabajo
 
-`main` (producción) ← `develop` ← ramas `feature/*` y `fix/*`, integradas con merges `--no-ff`.
+`main` (producción) ← `develop` ← ramas `feature/*`, `fix/*` y `refactor/*`, integradas con merges `--no-ff`.
