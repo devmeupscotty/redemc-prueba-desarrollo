@@ -6,7 +6,6 @@ namespace App;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use InvalidArgumentException;
 use PDO;
 use PDOException;
 
@@ -47,16 +46,27 @@ class PersonRepository
         return array_map(self::hydrate(...), $statement->fetchAll());
     }
 
-    public function existsBy(string $field, string $value): bool
+    /** @return list<string> the unique fields of $person whose values are already registered */
+    public function duplicatedFields(Person $person): array
     {
-        if (!in_array($field, Constants::UNIQUE_FIELDS, true)) {
-            throw new InvalidArgumentException("Field is not unique: {$field}");
+        $statement = $this->pdo->prepare(
+            'SELECT email, phone FROM person WHERE email = :email OR phone = :phone LIMIT ' . count(Constants::UNIQUE_FIELDS)
+        );
+        $statement->execute(['email' => $person->email, 'phone' => $person->phone]);
+        $rows = $statement->fetchAll();
+
+        $values = $person->toArray();
+        $duplicated = [];
+        foreach (Constants::UNIQUE_FIELDS as $field) {
+            foreach ($rows as $row) {
+                if ($values[$field] !== null && $row[$field] !== null && strcasecmp($row[$field], $values[$field]) === 0) {
+                    $duplicated[] = $field;
+                    break;
+                }
+            }
         }
 
-        $statement = $this->pdo->prepare("SELECT 1 FROM person WHERE {$field} = :value LIMIT 1");
-        $statement->execute(['value' => $value]);
-
-        return $statement->fetchColumn() !== false;
+        return $duplicated;
     }
 
     public function duplicateFieldFrom(PDOException $exception): ?string
